@@ -1,0 +1,101 @@
+/* src/styles/init.module.css */
+@import url("https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Goldman:wght@400;700&family=Iceland&family=New+Rocker&family=Roboto:ital,wght@0,100..900;1,100..900&family=Science+Gothic:wght@100..900&family=Zen+Dots&display=swap");
+
+.title {
+  padding-left: 10px;
+  position: relative;
+  font-family: Iceland;
+  font-size: 60px;
+  color: rgba(26, 135, 224, 0.911);
+  border: 1px solid rgb(12, 0, 0);
+  background-color: rgba(0, 0, 0, 0.795);
+}
+
+.aside {
+  padding: 25px 20px;
+  width: 100%;
+  height: 280px;
+  position: relative;
+  border-radius: 8px;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.795), rgba(0, 0, 0, 0.7)),
+    url("/fundo-da-tecnologia-cinza_1035-9343.avif");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 1px 1px 15px rgba(44, 1, 1, 0.158);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.aside h1 {
+  font-family: "science gothic";
+  color: rgba(182, 178, 178, 0.719);
+  margin: 0;
+}
+
+.featuresSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  margin: 60px 0 40px 0;
+}
+
+.featuresTitle {
+  color: whitesmoke;
+  font-size: 32px;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.card {
+  width: fit-content;
+  height: 100px;
+  padding: 10px 20px;
+  background-color: rgb(32, 48, 71);
+  color: rgb(202, 202, 202);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  align-items: center;
+}
+
+.enterButton {
+  width: 200px;
+  height: 50px;
+  background-color: rgba(127, 157, 255, 0.493);
+  color: rgb(0, 0, 0);
+  border-radius: 25px;
+  font-family: "Goldman";
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  margin-top: 15px;
+}
+
+.enterButton:hover {
+  background-color: rgb(5, 42, 110);
+  color: rgb(0, 0, 0);
+  cursor: pointer;
+}
+
+.footer {
+  width: 100%;
+  padding: 30px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 60px;
+}

@@ -1,0 +1,59 @@
+.main {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 460px;
+  max-width: 90vw;
+  height: fit-content;
+  padding: 35px 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  box-shadow: -2px -2px 2px rgba(0, 139, 139, 0.692);
+  border: 1px solid darkcyan;
+  border-radius: 10px;
+}
+
+.title {
+  font-size: 48px;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.336);
+}
+
+.registerForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.input {
+  border-radius: 3px;
+  border: none;
+  box-shadow: 2px 2px rgba(0, 0, 0, 0.973);
+  width: 250px;
+  padding: 6px;
+}
+
+.registerButton {
+  margin-top: 20px;
+  width: 200px;
+  height: 50px;
+  background-color: rgba(127, 157, 255, 0.493);
+  color: rgb(0, 0, 0);
+  border-radius: 25px;
+  font-size: 20px;
+  font-family: fantasy;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.registerButton:hover {
+  background-color: rgb(5, 42, 110);
+  color: rgb(0, 0, 0);
+  cursor: pointer;
+}
