@@ -1,0 +1,62 @@
+/* src/styles/footer.module.css */
+.footer {
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 40px 24px 24px 24px;
+  background: rgba(15, 23, 42, 0.85);
+  margin-top: 60px;
+}
+
+.footerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footerBrand h3 {
+  font-family: Iceland, sans-serif;
+  font-size: 28px;
+  color: rgba(26, 135, 224, 0.95);
+  margin: 0 0 6px 0;
+}
+
+.footerBrand p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 24px;
+}
+
+.footerLink {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.footerLink:hover {
+  color: #38bdf8;
+}
+
+.footerBottom {
+  max-width: 1200px;
+  margin: 30px auto 0 auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+}
+
+.footerBottom p {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+}

@@ -1,0 +1,47 @@
+/* src/styles/matchBadge.module.css */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+/* Tamanhos */
+.sizeSm {
+  font-size: 11px;
+  padding: 2px 8px;
+}
+
+.sizeMd {
+  font-size: 12px;
+  padding: 3px 10px;
+}
+
+.sizeLg {
+  font-size: 14px;
+  padding: 6px 14px;
+}
+
+/* Níveis de Match baseados na porcentagem */
+.highMatch {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.15), rgba(245, 158, 11, 0.25));
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #fcd34d;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+}
+
+.mediumMatch {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(14, 165, 233, 0.25));
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+.standardMatch {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.85);
+}

@@ -1,0 +1,767 @@
+/* src/styles/homepage.module.css */
+@import url("https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Iceland&family=Science+Gothic:wght@100..900&display=swap");
+
+.pageContainer {
+  min-height: 100vh;
+  width: 100%;
+  padding-bottom: 60px;
+  color: whitesmoke;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 1. Navbar Superior */
+.navbar {
+  width: 100%;
+  max-width: 1200px;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.brandLogo {
+  font-family: Iceland, sans-serif;
+  font-size: 32px;
+  color: rgba(26, 135, 224, 0.95);
+  margin: 0;
+}
+
+.navLinks {
+  display: flex;
+  gap: 24px;
+}
+
+.navLink {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.navLink:hover,
+.navLinkActive {
+  color: #38bdf8;
+}
+
+.navUser {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #0f172a;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 500;
+  color: whitesmoke;
+}
+
+.logoutBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.profileBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.profileBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+/* 2. Banner de Boas-Vindas (Hero Dashboard) */
+.heroBanner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 30px auto 20px auto;
+  padding: 35px 40px;
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.7),
+    rgba(15, 23, 42, 0.85)
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.heroInfo {
+  max-width: 650px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.heroTitle {
+  font-family: "science gothic", sans-serif;
+  font-size: 34px;
+  color: whitesmoke;
+  margin: 0;
+}
+
+.heroTitle span {
+  color: #38bdf8;
+}
+
+.heroSubtitle {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.heroImageContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroImg {
+  width: 140px;
+  height: auto;
+  filter: drop-shadow(0 10px 20px rgba(56, 189, 248, 0.3));
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* 3. Barra de Busca e Filtros */
+.searchSection {
+  width: 100%;
+  max-width: 1200px;
+  margin: 15px auto 30px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.searchBar {
+  display: flex;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 10px 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.searchInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.searchIcon {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.searchInput {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: whitesmoke;
+  font-size: 15px;
+}
+
+.searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.filterSelect {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 8px 14px;
+  outline: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.clearSearchInput {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 6px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.clearSearchInput:hover {
+  color: #f87171;
+}
+
+.sortButton {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sortButton:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+}
+
+/* Chips de Filtro Rápido */
+.chipsContainer {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: whitesmoke;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.chipActive {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38bdf8;
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+/* 4. Layout Principal em 2 Colunas */
+.mainLayout {
+  width: 100%;
+  max-width: 1200px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+}
+
+/* Coluna da Esquerda: Feed de Vagas */
+.jobsFeed {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.feedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.feedTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: whitesmoke;
+  margin: 0;
+}
+
+.feedSortInfo {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 3px;
+}
+
+.feedSortInfo strong {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.feedCount {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Empty State Card */
+.emptyCard {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.emptyIcon {
+  font-size: 42px;
+  opacity: 0.8;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+.emptyMessage {
+  font-size: 17px;
+  font-weight: 600;
+  color: whitesmoke;
+  margin: 0;
+}
+
+.resetFilterBtn {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.resetFilterBtn:hover {
+  background: rgba(56, 189, 248, 0.3);
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+}
+
+/* Card de Vaga */
+.jobCard {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.jobCard:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(56, 189, 248, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.jobHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.jobTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.jobRole {
+  font-size: 19px;
+  font-weight: 600;
+  color: whitesmoke;
+  margin: 0;
+}
+
+.matchBadge {
+  background: linear-gradient(
+    135deg,
+    rgba(234, 179, 8, 0.15),
+    rgba(245, 158, 11, 0.25)
+  );
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #fcd34d;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+}
+
+.jobCompany {
+  font-size: 14px;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.jobBadgeLocation {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #86efac;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.jobDescription {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.jobTags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.jobTag {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.jobFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 14px;
+}
+
+.salaryInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jobSalary {
+  font-size: 15px;
+  font-weight: 600;
+  color: whitesmoke;
+  font-family: monospace;
+}
+
+.jobPostedAt {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.applyBtn {
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  color: #0f172a;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.applyBtn:hover {
+  background: linear-gradient(135deg, #38bdf8, #7dd3fc);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+}
+
+.appliedBtn {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid #22c55e;
+  color: #86efac;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: default;
+}
+
+/* Coluna da Direita: Sidebar do Candidato */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profileCard {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.profileAvatarLarge {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: bold;
+  color: #0f172a;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.profileName {
+  font-size: 18px;
+  font-weight: 600;
+  color: whitesmoke;
+  margin: 0;
+}
+
+.profileRole {
+  font-size: 13px;
+  color: #38bdf8;
+  margin: 0;
+}
+
+.progressBarContainer {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+}
+
+.progressBarBg {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  width: 85%;
+  background: linear-gradient(90deg, #0284c7, #38bdf8);
+  border-radius: 3px;
+}
+
+.resumeBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px dashed rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.viewProfileBtn {
+  display: block;
+  width: 100%;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s;
+  margin-top: 4px;
+}
+
+.viewProfileBtn:hover {
+  background: #38bdf8;
+  color: #0f172a;
+  box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+}
+
+/* Stats Card */
+.statsCard {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.statsTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: whitesmoke;
+  margin: 0;
+}
+
+.statRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.statValue {
+  font-family: "Goldman", sans-serif;
+  font-weight: bold;
+  color: #38bdf8;
+  font-size: 15px;
+}
+
+/* Tip Card */
+.tipCard {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 4px solid #38bdf8;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tipTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #38bdf8;
+  margin: 0;
+}
+
+.tipText {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .mainLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .heroBanner {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .navLinks {
+    display: none;
+  }
+}

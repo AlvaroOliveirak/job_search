@@ -1,6 +1,6 @@
 // src/pages/Init.tsx
 import styles from "../styles/init.module.css";
-import Button from "../components/button";
+import { Button, Footer } from "../components";
 
 function Init() {
   return (
@@ -11,7 +11,7 @@ function Init() {
       <div className={styles.aside}>
         {/* Lado Esquerdo: Título e Métricas (Opção 3) */}
         <div className={styles.asideLeft}>
-          <h1>Encontre Vagas Rápido</h1>
+          <h1>Encontre as vagas mais adequadas para você</h1>
           <p className={styles.asideSubtitle}>
             Conectamos os melhores profissionais às empresas mais inovadoras.
           </p>
@@ -33,23 +33,28 @@ function Init() {
             </div>
           </div>
         </div>
-
-        {/* Lado Direito: Card Glassmorphism de Sucesso (Opção 4) */}
-        <div className={styles.testimonialCard}>
-          <div className={styles.cardHeader}>
-            <span className={styles.statusDot}></span>
-            <span className={styles.statusText}>Contratação recente</span>
-          </div>
-          <p className={styles.cardQuote}>
-            "Consegui minha primeira vaga de desenvolvedor em menos de duas
-            semanas pela plataforma!"
-          </p>
-          <div className={styles.cardAuthor}>
-            <strong>Lucas M.</strong>
-            <span>Desenvolvedor Jr. • Remoto</span>
-          </div>
-        </div>
       </div>
+      {/* boas-vindas/explicação do objetivo */}
+      <div className={styles.intro}>
+        <h2 className={styles.introTitle}>Bem-vindo ao Job Search!</h2>
+        <p className={styles.introText}>
+          O <strong>Job Search</strong> é uma plataforma criada para simplificar
+          e impulsionar a sua busca por oportunidades profissionais. Nosso
+          objetivo é oferecer uma experiência centralizada e inteligente,
+          conectando talentos às melhores empresas do mercado.
+        </p>
+        <p className={styles.introText}>
+          Além de explorar e filtrar vagas recomendadas, a plataforma conta com
+          uma{" "}
+          <strong>
+            automatização para buscar vagas com base no seu currículo
+          </strong>
+          : o sistema analisa suas habilidades e trajetória profissional para
+          encontrar e indicar instantaneamente as vagas que dão match perfeito
+          com o seu perfil.
+        </p>
+      </div>
+
       {/* 1. Como Funciona (3 Passos) */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
@@ -85,12 +90,6 @@ function Init() {
             </p>
           </div>
         </div>
-
-        <Button
-          target="/Register"
-          Text="Começar Agora"
-          className={styles.enterButton}
-        />
       </section>
 
       {/* 2. Categorias em Destaque */}
@@ -241,30 +240,16 @@ function Init() {
           Junte-se a milhares de profissionais e receba propostas das melhores
           empresas agora mesmo.
         </p>
+
         <Button
           target="/Register"
-          Text="Criar Conta Gratuita"
+          Text="Começar"
           className={styles.ctaButton}
         />
       </section>
 
-      {/* 6. Rodapé */}
-      <footer className={styles.footer}>
-        <div className={styles.footerContent}>
-          <div className={styles.footerBrand}>
-            <h3>Job Search</h3>
-            <p>Conectando talentos e oportunidades em todo o país.</p>
-          </div>
-          <div className={styles.footerLinks}>
-            <span>Privacidade</span>
-            <span>Termos de Uso</span>
-            <span>Contato</span>
-          </div>
-        </div>
-        <div className={styles.footerBottom}>
-          <p>© 2026 Job Search. Todos os direitos reservados.</p>
-        </div>
-      </footer>
+      {/* 6. Rodapé Reutilizável */}
+      <Footer />
     </>
   );
 }

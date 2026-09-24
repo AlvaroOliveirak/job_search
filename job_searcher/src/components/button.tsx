@@ -1,16 +1,45 @@
+// src/components/button.tsx
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-type ButtonProps = {
-  target: string;
-  Text: string;
+export type ButtonProps = {
+  target?: string;
+  Text?: string;
+  children?: ReactNode;
   className?: string;
+  onClick?: (event: React.MouseEvent<HTMLElement>) => void;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
 };
 
-function Button({ target, Text, className }: ButtonProps) {
+function Button({
+  onClick,
+  target,
+  Text,
+  children,
+  className,
+  type = "button",
+  disabled,
+}: ButtonProps) {
+  const content = children ?? Text;
+
+  if (target && !disabled) {
+    return (
+      <Link onClick={onClick} to={target} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
   return (
-    <Link to={target} className={className}>
-      {Text}
-    </Link>
+    <button
+      type={type}
+      onClick={onClick}
+      className={className}
+      disabled={disabled}
+    >
+      {content}
+    </button>
   );
 }
 
