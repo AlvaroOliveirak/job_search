@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "title": "Desenvolvedor Frontend React",
+    "company": "TechFlow Solutions",
+    "location": "São Paulo, SP",
+    "type": "Remoto",
+    "salary": "R$ 6.000 - R$ 8.000",
+    "match": 98,
+    "tags": ["React", "TypeScript", "Next.js", "Tailwind"],
+    "description": "Buscamos desenvolvedor(a) para construir interfaces modernas, acessíveis e de alta performance com React.",
+    "postedAt": "Há 2 horas"
+  },
+  {
+    "id": 2,
+    "title": "Engenheiro de Software Full Stack",
+    "company": "Nexa Labs",
+    "location": "São Paulo, SP",
+    "type": "Híbrido",
+    "salary": "R$ 8.500 - R$ 11.500",
+    "match": 94,
+    "tags": ["Node.js", "React", "PostgreSQL", "Docker"],
+    "description": "Venha arquitetar soluções ponta a ponta em nossa plataforma financeira de alta escala.",
+    "postedAt": "Há 5 horas"
+  },
+  {
+    "id": 3,
+    "title": "Desenvolvedor Júnior Frontend",
+    "company": "StartUp Brasil",
+    "location": "Belo Horizonte, MG",
+    "type": "Remoto",
+    "salary": "R$ 3.800 - R$ 5.000",
+    "match": 91,
+    "tags": ["JavaScript", "React", "CSS Modules", "Git"],
+    "description": "Excelente oportunidade para quem busca crescimento acelerado trabalhando com mentores seniores.",
+    "postedAt": "Há 1 dia"
+  },
+  {
+    "id": 4,
+    "title": "UI/UX & Product Designer",
+    "company": "Lumina Design Studio",
+    "location": "Remoto",
+    "type": "Remoto",
+    "salary": "R$ 6.500 - R$ 8.500",
+    "match": 88,
+    "tags": ["Figma", "Design System", "UX Research", "Prototipagem"],
+    "description": "Responsável por criar jornadas intuitivas e componentes visuais do nosso novo ecossistema SaaS.",
+    "postedAt": "Há 1 dia"
+  },
+  {
+    "id": 5,
+    "title": "Desenvolvedor Backend Python / Django",
+    "company": "DataCorp Analytics",
+    "location": "Curitiba, PR",
+    "type": "Híbrido",
+    "salary": "R$ 7.500 - R$ 9.800",
+    "match": 85,
+    "tags": ["Python", "Django", "FastAPI", "AWS"],
+    "description": "Construção de APIs robustas e pipelines de integração para grandes volumes de dados.",
+    "postedAt": "Há 2 dias"
+  },
+  {
+    "id": 6,
+    "title": "Engenheiro de Dados Júnior",
+    "company": "CloudData Insights",
+    "location": "Remoto",
+    "type": "Remoto",
+    "salary": "R$ 4.500 - R$ 6.200",
+    "match": 82,
+    "tags": ["SQL", "Python", "ETL", "Power BI"],
+    "description": "Apoiar o time de BI na modelagem de dados, automação de fluxos ETL e relatórios analíticos.",
+    "postedAt": "Há 3 dias"
+  },
+  {
+    "id": 7,
+    "title": "Analista de Qualidade de Software (QA)",
+    "company": "SafeCode Tech",
+    "location": "Florianópolis, SC",
+    "type": "Presencial",
+    "salary": "R$ 5.000 - R$ 6.800",
+    "match": 78,
+    "tags": ["Cypress", "Selenium", "Jest", "Testes Automatizados"],
+    "description": "Garantir a integridade, usabilidade e estabilidade de nossas aplicações web e mobile.",
+    "postedAt": "Há 4 dias"
+  },
+  {
+    "id": 8,
+    "title": "Desenvolvedor Mobile React Native",
+    "company": "AppVibe Studios",
+    "location": "Remoto",
+    "type": "Remoto",
+    "salary": "R$ 7.000 - R$ 9.000",
+    "match": 74,
+    "tags": ["React Native", "TypeScript", "Redux", "iOS/Android"],
+    "description": "Criação de novos recursos e melhorias contínuas para aplicativo mobile com mais de 500k usuários.",
+    "postedAt": "Há 5 dias"
+  }
+]

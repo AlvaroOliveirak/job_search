@@ -1,17 +1,94 @@
 // src/pages/Init.tsx
+import { Link } from "react-router-dom";
 import styles from "../styles/init.module.css";
-import Button from "../components/button";
+import { Button, Footer } from "../components";
 
 function Init() {
   return (
     <>
-      <div>
-        <h1 className={styles.title}>Job Search</h1>
-      </div>
+      <header className={styles.headerBar}>
+        <div className={styles.brandWrapper}>
+          <div className={styles.logoBadge} title="Job Search - Conectando Carreiras">
+            <svg
+              width="46"
+              height="46"
+              viewBox="0 0 48 48"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className={styles.logoSvg}
+            >
+              <defs>
+                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#38bdf8" />
+                  <stop offset="50%" stopColor="#0284c7" />
+                  <stop offset="100%" stopColor="#818cf8" />
+                </linearGradient>
+                <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="2.5" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+              <rect
+                x="3"
+                y="3"
+                width="42"
+                height="42"
+                rx="12"
+                fill="rgba(10, 25, 47, 0.95)"
+                stroke="url(#logoGradient)"
+                strokeWidth="2"
+                filter="url(#logoGlow)"
+              />
+              <path
+                d="M17 17C17 14.7909 18.7909 13 21 13H27C29.2091 13 31 14.7909 31 17V19H17V17Z"
+                stroke="#38bdf8"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <rect
+                x="11"
+                y="19"
+                width="26"
+                height="18"
+                rx="4"
+                fill="rgba(56, 189, 248, 0.12)"
+                stroke="url(#logoGradient)"
+                strokeWidth="2"
+              />
+              <circle cx="23" cy="27" r="4.5" stroke="#38bdf8" strokeWidth="1.8" />
+              <circle cx="23" cy="27" r="1.5" fill="#818cf8" />
+              <path
+                d="M26.2 30.2L30 34"
+                stroke="#38bdf8"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <path
+                d="M12 28H18.5M27.5 28H36"
+                stroke="#38bdf8"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeDasharray="1.5 2"
+              />
+            </svg>
+          </div>
+
+          <div className={styles.titleGroup}>
+            <h1 className={styles.title}>
+              Job <span className={styles.titleHighlight}>Search</span>
+            </h1>
+            <span className={styles.titleTagline}>Plataforma de Carreiras & Match IA</span>
+          </div>
+        </div>
+
+        <Link to="/Register" className={styles.headerCta}>
+          Cadastrar-se ➔
+        </Link>
+      </header>
       <div className={styles.aside}>
         {/* Lado Esquerdo: Título e Métricas (Opção 3) */}
         <div className={styles.asideLeft}>
-          <h1>Encontre Vagas Rápido</h1>
+          <h1>Encontre as vagas mais adequadas para você</h1>
           <p className={styles.asideSubtitle}>
             Conectamos os melhores profissionais às empresas mais inovadoras.
           </p>
@@ -33,23 +110,28 @@ function Init() {
             </div>
           </div>
         </div>
-
-        {/* Lado Direito: Card Glassmorphism de Sucesso (Opção 4) */}
-        <div className={styles.testimonialCard}>
-          <div className={styles.cardHeader}>
-            <span className={styles.statusDot}></span>
-            <span className={styles.statusText}>Contratação recente</span>
-          </div>
-          <p className={styles.cardQuote}>
-            "Consegui minha primeira vaga de desenvolvedor em menos de duas
-            semanas pela plataforma!"
-          </p>
-          <div className={styles.cardAuthor}>
-            <strong>Lucas M.</strong>
-            <span>Desenvolvedor Jr. • Remoto</span>
-          </div>
-        </div>
       </div>
+      {/* boas-vindas/explicação do objetivo */}
+      <div className={styles.intro}>
+        <h2 className={styles.introTitle}>Bem-vindo ao Job Search!</h2>
+        <p className={styles.introText}>
+          O <strong>Job Search</strong> é uma plataforma criada para simplificar
+          e impulsionar a sua busca por oportunidades profissionais. Nosso
+          objetivo é oferecer uma experiência centralizada e inteligente,
+          conectando talentos às melhores empresas do mercado.
+        </p>
+        <p className={styles.introText}>
+          Além de explorar e filtrar vagas recomendadas, a plataforma conta com
+          uma{" "}
+          <strong>
+            automatização para buscar vagas com base no seu currículo
+          </strong>
+          : o sistema analisa suas habilidades e trajetória profissional para
+          encontrar e indicar instantaneamente as vagas que dão match perfeito
+          com o seu perfil.
+        </p>
+      </div>
+
       {/* 1. Como Funciona (3 Passos) */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
@@ -85,12 +167,6 @@ function Init() {
             </p>
           </div>
         </div>
-
-        <Button
-          target="/Register"
-          Text="Começar Agora"
-          className={styles.enterButton}
-        />
       </section>
 
       {/* 2. Categorias em Destaque */}
@@ -241,30 +317,16 @@ function Init() {
           Junte-se a milhares de profissionais e receba propostas das melhores
           empresas agora mesmo.
         </p>
+
         <Button
           target="/Register"
-          Text="Criar Conta Gratuita"
+          Text="Começar"
           className={styles.ctaButton}
         />
       </section>
 
-      {/* 6. Rodapé */}
-      <footer className={styles.footer}>
-        <div className={styles.footerContent}>
-          <div className={styles.footerBrand}>
-            <h3>Job Search</h3>
-            <p>Conectando talentos e oportunidades em todo o país.</p>
-          </div>
-          <div className={styles.footerLinks}>
-            <span>Privacidade</span>
-            <span>Termos de Uso</span>
-            <span>Contato</span>
-          </div>
-        </div>
-        <div className={styles.footerBottom}>
-          <p>© 2026 Job Search. Todos os direitos reservados.</p>
-        </div>
-      </footer>
+      {/* 6. Rodapé Reutilizável */}
+      <Footer />
     </>
   );
 }
