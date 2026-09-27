@@ -1,49 +1,58 @@
-// src/pages/Register.tsx
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import styles from "../styles/register.module.css";
-import { Button, ResumeUpload } from "../components";
+// src/pages/Login.tsx
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import styles from "../styles/login.module.css";
+import { Button } from "../components";
 
-function Register() {
-  const [fileName, setFileName] = useState<string | null>(null);
+function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    // Simulação de login: redireciona para a página inicial
+    navigate("/");
+  };
 
   return (
     <div className={styles.pageContainer}>
-      {/*Área à esquerda */}
+      {/* Área à esquerda: Apelo & Boas-vindas */}
       <div className={styles.appealsection}>
         <div className={styles.maintitle}>
           <h1 className={styles.title}>Job Search</h1>
           <h2 className={styles.subtitle}>
-            Dê o <strong>próximo passo</strong> <br />
-            na sua carreira
+            Bem-vindo de volta! <br />
+            Dê o <strong>próximo passo</strong> na sua carreira
           </h2>
           <p>
-            Conectamos você com empresas de tecnologia que buscam exatamente
-            suas qualificações
+            Acesse sua conta para conferir novas oportunidades que dão match com
+            o seu perfil profissional.
           </p>
         </div>
 
-        <div className={styles.appeal}>⚡ Candidatura rápida</div>
+        <div className={styles.appeal}>⚡ Matchs Atualizados</div>
         <p className={styles.appeal1}>
-          ° Envie seu currículo diretamente, sem formulários exaustivos
+          ° Novas vagas recomendadas diariamente com base nas suas qualificações
         </p>
 
-        <div className={styles.appeal}>🎯 Match Inteligente</div>
+        <div className={styles.appeal}>🎯 Status em Tempo Real</div>
         <p className={styles.appeal2}>
-          ° Análise automatizada do currículo para encontrar vagas sob medida
+          ° Acompanhe o retorno das empresas e as etapas do seu processo
         </p>
 
-        <div className={styles.appeal}>🚀 Conexão Direta</div>
+        <div className={styles.appeal}>🔒 Acesso Seguro & Privativo</div>
         <p className={styles.appeal3}>
-          ° Acesso a empresas de ponta com processos ágeis e feedbacks rápidos
+          ° Suas informações e pretensões profissionais protegidas com segurança
         </p>
       </div>
 
-      {/*Área à direita */}
+      {/* Área à direita: Card de Login */}
       <main className={styles.main}>
-        <h1 className={styles.cardtitle}>Cadastre-se</h1>
+        <h1 className={styles.cardtitle}>Entrar</h1>
         <p>
-          Já possui uma conta?<Link to="/login"> Entre</Link>
+          Não possui uma conta? <Link to="/Register">Cadastre-se</Link>
         </p>
 
         <div className={styles.otherlogins}>
@@ -75,26 +84,21 @@ function Register() {
             Linkedin
           </button>
         </div>
-        <form action="post" className={styles.registerForm}>
-          {/* E-mail */}
 
-          <label htmlFor="name" className={styles.label}>
-            Nome Completo
-          </label>
-          <input
-            type="text"
-            placeholder="ex: Douglas Costa"
-            name="name"
-            className={styles.input}
-          />
+        <form onSubmit={handleSubmit} className={styles.loginForm}>
+          {/* E-mail */}
           <label htmlFor="email" className={styles.label}>
             E-mail:
           </label>
           <input
+            id="email"
             type="email"
             placeholder="xxxxxxx@gmail.com"
             name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className={styles.input}
+            required
           />
 
           {/* Senha */}
@@ -102,36 +106,42 @@ function Register() {
             Senha:
           </label>
           <input
+            id="password"
             type="password"
             placeholder="********"
             name="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className={styles.input}
+            required
           />
 
-          {/* Confirmar Senha */}
-          <label htmlFor="confirm-password" className={styles.label}>
-            Confirmar Senha:
-          </label>
-          <input
-            type="password"
-            placeholder="********"
-            name="confirm-password"
-            className={styles.input}
-          />
+          {/* Opções: Lembrar de mim e Esqueci a senha */}
+          <div className={styles.optionsRow}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              Lembrar de mim
+            </label>
+            <a href="#recuperar" className={styles.forgotLink}>
+              Esqueceu a senha?
+            </a>
+          </div>
 
-          {/* ⭐️ Campo de Upload de Currículo Reutilizável */}
-          <ResumeUpload
-            fileName={fileName}
-            onFileSelect={(file) => setFileName(file.name)}
-            label="Currículo:"
-            className={styles.uploadField}
-          />
+          <Button type="submit" target="/" Text="Entrar" className={styles.loginButton} />
         </form>
 
-        <Button target="/" Text="Registrar" className={styles.registerButton} />
+        <div className={styles.backHome}>
+          <Link to="/" className={styles.backHomeLink}>
+            ← Voltar ao Início
+          </Link>
+        </div>
       </main>
     </div>
   );
 }
 
-export default Register;
+export default Login;

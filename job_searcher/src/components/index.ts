@@ -5,9 +5,6 @@ export type { ButtonProps } from "./button";
 export { default as MatchBadge } from "./MatchBadge";
 export type { MatchBadgeProps } from "./MatchBadge";
 
-export { default as Searchbar } from "./Searchbar";
-export type { SearchbarProps } from "./Searchbar";
-
 export { default as JobCard } from "./JobCard";
 export type { Job, JobCardProps } from "./JobCard";
 
