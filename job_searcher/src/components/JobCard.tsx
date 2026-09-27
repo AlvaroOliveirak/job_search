@@ -1,81 +1,77 @@
-// src/components/JobCard.tsx
-import MatchBadge from "./MatchBadge";
-import Button from "./button";
+import React from "react";
+import type { UserJobMatch } from "../types/job";
 import styles from "../styles/jobCard.module.css";
 
-export type Job = {
-  id: number;
-  title: string;
-  company: string;
-  location: string;
-  type: string;
-  salary: string;
-  match: number;
-  tags: string[];
-  description: string;
-  postedAt: string;
-};
+interface JobCardProps {
+  match: UserJobMatch;
+  onViewDetails: (match: UserJobMatch) => void;
+  onToggleFavorite: (matchId: number) => void;
+}
 
-export type JobCardProps = {
-  job: Job;
-  isApplied?: boolean;
-  onApply?: (id: number) => void;
-  className?: string;
-};
+export const JobCard: React.FC<JobCardProps> = ({
+  match,
+  onViewDetails,
+  onToggleFavorite,
+}) => {
+  const { job, score, is_favorite } = match;
 
-function JobCard({
-  job,
-  isApplied = false,
-  onApply,
-  className = "",
-}: JobCardProps) {
-  const handleApplyClick = () => {
-    if (!isApplied && onApply) {
-      onApply(job.id);
-    }
+  const getScoreBadgeClass = (s: number) => {
+    if (s >= 85) return `${styles.scoreBadge} ${styles.scoreHigh}`;
+    if (s >= 70) return `${styles.scoreBadge} ${styles.scoreMedium}`;
+    return `${styles.scoreBadge} ${styles.scoreLow}`;
   };
 
   return (
-    <article className={`${styles.jobCard} ${className}`}>
-      <div className={styles.jobHeader}>
-        <div>
-          <div className={styles.jobTitleRow}>
-            <h4 className={styles.jobRole}>{job.title}</h4>
-            <MatchBadge score={job.match} />
-          </div>
-          <span className={styles.jobCompany}>🏢 {job.company}</span>
-        </div>
-        <span className={styles.jobBadgeLocation}>
-          {job.type} • {job.location}
-        </span>
-      </div>
-
-      <p className={styles.jobDescription}>{job.description}</p>
-
-      <div className={styles.jobTags}>
-        {job.tags.map((tag) => (
-          <span key={tag} className={styles.jobTag}>
-            {tag}
+    <article className={styles.card}>
+      <div className={styles.header}>
+        <div className={styles.badgesContainer}>
+          <span className={getScoreBadgeClass(score)}>
+            ★ {score}% Match
           </span>
-        ))}
-      </div>
-
-      <div className={styles.jobFooter}>
-        <div className={styles.salaryInfo}>
-          <span className={styles.jobSalary}>{job.salary}</span>
-          <span className={styles.jobPostedAt}>⏱️ {job.postedAt}</span>
+          <span className={styles.sourceBadge}>{job.source}</span>
         </div>
 
-        <Button
-          onClick={handleApplyClick}
-          className={isApplied ? styles.appliedBtn : styles.applyBtn}
-          disabled={isApplied}
+        <button
+          className={`${styles.favBtn} ${is_favorite ? styles.favActive : ""}`}
+          onClick={() => onToggleFavorite(match.id)}
+          title={is_favorite ? "Remover dos favoritos" : "Salvar como favorita"}
+          aria-label="Favoritar vaga"
         >
-          {isApplied ? "✓ Candidatura Enviada" : "Candidatar-se"}
-        </Button>
+          {is_favorite ? "♥" : "♡"}
+        </button>
+      </div>
+
+      <div>
+        <h3 className={styles.title}>{job.title}</h3>
+        <div className={styles.companyRow}>
+          <span>🏢 {job.company}</span>
+        </div>
+      </div>
+
+      <div className={styles.location}>
+        <span>📍 {job.location || "Local não informado"}</span>
+      </div>
+
+      <div className={styles.actions}>
+        <button
+          className={styles.detailsBtn}
+          onClick={() => onViewDetails(match)}
+        >
+          Ver Detalhes
+        </button>
+
+        <a
+          href={job.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.linkBtn}
+        >
+          Candidatar-se ↗
+        </a>
       </div>
     </article>
   );
-}
+};
 
 export default JobCard;
+
