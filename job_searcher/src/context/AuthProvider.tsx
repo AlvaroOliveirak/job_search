@@ -5,12 +5,28 @@ import { AuthContext, type User } from "./AuthContext";
 const STORAGE_AUTH_KEY = "job_search_auth";
 
 function extractNameFromEmail(email: string): string {
-  const localPart = email.split("@")[0] || "Candidato";
-  return localPart
-    .split(/[._-]/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+  const cleanEmail = email.toLowerCase().trim();
+
+  // Caso especial para o usuário principal
+  if (cleanEmail.startsWith("alvarooliver")) {
+    return "Alvaro Oliver";
+  }
+
+  const localPart = cleanEmail.split("@")[0] || "Candidato";
+
+  // Remove dígitos numéricos do final (ex: joao1234 -> joao)
+  const withoutNumbers = localPart.replace(/\d+$/, "");
+
+  // Se tiver separadores como ponto, hífen ou underscore
+  const parts = withoutNumbers.split(/[._-]+/).filter(Boolean);
+  if (parts.length > 1) {
+    return parts
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  }
+
+  const single = withoutNumbers || localPart;
+  return single.charAt(0).toUpperCase() + single.slice(1).toLowerCase();
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -33,6 +49,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.isLoggedIn && parsed.user) {
+          const email = (parsed.user.email || "").toLowerCase();
+          const currentName = parsed.user.name || "";
+          // Corrige automaticamente sessões pré-existentes salvas no navegador
+          if (email.includes("alvarooliver") && (currentName.includes("1802") || !currentName.includes(" "))) {
+            const correctedUser = { ...parsed.user, name: "Alvaro Oliver" };
+            localStorage.setItem(
+              STORAGE_AUTH_KEY,
+              JSON.stringify({ ...parsed, user: correctedUser })
+            );
+            return correctedUser;
+          }
           return parsed.user;
         }
       }
@@ -43,8 +70,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const login = (email: string, name?: string) => {
-    const finalName = name || extractNameFromEmail(email);
-    const loggedUser: User = { email, name: finalName };
+    const cleanEmail = email.trim();
+    let finalName = name || extractNameFromEmail(cleanEmail);
+
+    if (cleanEmail.toLowerCase().includes("alvarooliver") && (finalName.includes("1802") || !finalName.includes(" "))) {
+      finalName = "Alvaro Oliver";
+    }
+
+    const loggedUser: User = { email: cleanEmail, name: finalName };
     setIsLoggedIn(true);
     setUser(loggedUser);
     localStorage.setItem(

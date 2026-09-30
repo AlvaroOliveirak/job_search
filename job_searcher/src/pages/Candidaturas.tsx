@@ -138,7 +138,7 @@ export function Candidaturas() {
           {isLoggedIn && (
             <div className={styles.userNavGroup}>
               <span className={styles.userNamePill}>
-                👤 {user?.name?.split(" ")[0] || "Candidato"}
+                👤 {user?.name || "Candidato"}
               </span>
               <button
                 type="button"
