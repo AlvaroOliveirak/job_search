@@ -1,9 +1,25 @@
-// src/pages/Init.tsx
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "../styles/init.module.css";
 import { Button, Footer } from "../components";
+import { useAuth } from "../context/AuthContext";
 
 function Init() {
+  const { isLoggedIn, user, logout } = useAuth();
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((prev) => (prev === msg ? null : prev));
+    }, 2800);
+  };
+
+  const handleLogout = () => {
+    logout();
+    showToast("✓ Você saiu da sua conta com sucesso!");
+  };
+
   return (
     <>
       <header className={styles.headerBar}>
@@ -81,10 +97,66 @@ function Init() {
           </div>
         </div>
 
-        <Link to="/Register" className={styles.headerCta}>
-          Cadastrar-se ➔
-        </Link>
+        {isLoggedIn ? (
+          <div className={styles.headerActions}>
+            <Link to="/home" className={styles.headerNavLink}>
+              Vagas
+            </Link>
+            <Link to="/candidaturas" className={styles.headerNavLink}>
+              Minhas Candidaturas
+            </Link>
+            <div
+              className={styles.userBadge}
+              title={`Conectado como ${user?.email || "Candidato"}`}
+            >
+              <span className={styles.userAvatar}>
+                {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+              </span>
+              <span>Olá, {user?.name?.split(" ")[0] || "Candidato"}</span>
+            </div>
+            <button
+              type="button"
+              className={styles.logoutBtn}
+              onClick={handleLogout}
+              title="Encerrar sessão"
+            >
+              Sair
+            </button>
+          </div>
+        ) : (
+          <div className={styles.headerActions}>
+            <Link to="/login" className={styles.headerLoginBtn}>
+              Entrar
+            </Link>
+            <Link to="/Register" className={styles.headerCta}>
+              Cadastrar-se ➔
+            </Link>
+          </div>
+        )}
       </header>
+
+      {/* Banner de Boas-vindas para Usuário Logado */}
+      {isLoggedIn && (
+        <div className={styles.loggedInBanner}>
+          <span className={styles.welcomeTag}>✦ SESSÃO ATIVA</span>
+          <h2 className={styles.loggedInTitle}>
+            Bem-vindo de volta, {user?.name || "Candidato"}!
+          </h2>
+          <p className={styles.loggedInText}>
+            Seu perfil está conectado e sincronizado com o motor de compatibilidade IA.
+            Acompanhe o andamento dos seus processos seletivos ou descubra novas vagas abertas hoje.
+          </p>
+          <div className={styles.quickActions}>
+            <Link to="/home" className={styles.primaryActionBtn}>
+              Explorar Vagas Recomendadas ➔
+            </Link>
+            <Link to="/candidaturas" className={styles.secondaryActionBtn}>
+              Ver Minhas Candidaturas ➔
+            </Link>
+          </div>
+        </div>
+      )}
+
       <div className={styles.aside}>
         {/* Lado Esquerdo: Título e Métricas (Opção 3) */}
         <div className={styles.asideLeft}>
@@ -312,21 +384,59 @@ function Init() {
 
       {/* 5. CTA Final Pré-Rodapé */}
       <section className={styles.ctaSection}>
-        <h2>Pronto para dar o próximo passo na sua carreira?</h2>
-        <p>
-          Junte-se a milhares de profissionais e receba propostas das melhores
-          empresas agora mesmo.
-        </p>
-
-        <Button
-          target="/Register"
-          Text="Começar"
-          className={styles.ctaButton}
-        />
+        {isLoggedIn ? (
+          <>
+            <h2>Continue impulsionando a sua carreira profissional</h2>
+            <p>
+              Novas oportunidades e atualizações de processos seletivos são catalogadas diariamente.
+            </p>
+            <div style={{ display: "flex", gap: "16px", marginTop: "12px", flexWrap: "wrap", justifyContent: "center" }}>
+              <Button
+                target="/home"
+                Text="Ver Vagas"
+                className={styles.ctaButton}
+              />
+              <Link
+                to="/candidaturas"
+                className={styles.secondaryActionBtn}
+                style={{
+                  height: "54px",
+                  borderRadius: "27px",
+                  padding: "0 28px",
+                  fontSize: "17px",
+                  display: "inline-flex",
+                  alignItems: "center"
+                }}
+              >
+                Minhas Candidaturas
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <h2>Pronto para dar o próximo passo na sua carreira?</h2>
+            <p>
+              Junte-se a milhares de profissionais e receba propostas das melhores
+              empresas agora mesmo.
+            </p>
+            <Button
+              target="/Register"
+              Text="Começar"
+              className={styles.ctaButton}
+            />
+          </>
+        )}
       </section>
 
       {/* 6. Rodapé Reutilizável */}
       <Footer />
+
+      {/* Toast de feedback de ação / logout (Requisito 8 da AV1) */}
+      {toastMessage && (
+        <div className={styles.toastNotification}>
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </>
   );
 }

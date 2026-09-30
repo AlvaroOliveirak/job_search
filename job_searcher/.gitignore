@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Documentos e Guias Locais
+Guia_Defesa*
+*.docx

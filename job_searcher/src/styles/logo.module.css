@@ -1,0 +1,75 @@
+/* src/styles/logo.module.css */
+@import url("https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Iceland&family=Zen+Dots&display=swap");
+
+.brandLink {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.brandLink:hover {
+  transform: translateY(-1px);
+}
+
+.brandWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.logoBadge:hover {
+  transform: scale(1.08) rotate(2deg);
+}
+
+.logoSvg {
+  display: block;
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.title {
+  font-family: "Zen Dots", "Iceland", sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  text-shadow: 0 0 18px rgba(56, 189, 248, 0.45);
+}
+
+.titleHighlight {
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.titleTagline {
+  font-family: "Iceland", sans-serif;
+  font-size: 13px;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+  .titleTagline {
+    display: none;
+  }
+  .title {
+    font-size: 20px;
+  }
+}

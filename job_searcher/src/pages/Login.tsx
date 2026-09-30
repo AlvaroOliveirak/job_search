@@ -2,18 +2,69 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "../styles/login.module.css";
-import { Button } from "../components";
+import { useAuth } from "../context/AuthContext";
+
+interface LoginFormErrors {
+  email?: string;
+  password?: string;
+}
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [errors, setErrors] = useState<LoginFormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { isLoggedIn, user, login, logout } = useAuth();
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((prev) => (prev === msg ? null : prev));
+    }, 2800);
+  };
+
+  const handleLogout = () => {
+    logout();
+    showToast("✓ Você encerrou sua sessão com sucesso.");
+  };
+
+  const validate = (): boolean => {
+    const errs: LoginFormErrors = {};
+
+    if (!email.trim()) {
+      errs.email = "O e-mail é obrigatório.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      errs.email = "Informe um formato de e-mail válido (ex: seu@email.com).";
+    }
+
+    if (!password) {
+      errs.password = "A senha é obrigatória.";
+    } else if (password.length < 6) {
+      errs.password = "A senha deve ter no mínimo 6 caracteres.";
+    }
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    // Simulação de login: redireciona para a página inicial
-    navigate("/");
+
+    if (!validate()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    login(email.trim());
+    navigate("/home");
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    login(`candidato.${provider.toLowerCase()}@email.com`, `Candidato (${provider})`);
+    navigate("/home");
   };
 
   return (
@@ -48,15 +99,59 @@ function Login() {
         </p>
       </div>
 
-      {/* Área à direita: Card de Login */}
-      <main className={styles.main}>
-        <h1 className={styles.cardtitle}>Entrar</h1>
+      {/* Área à direita: Sessão Ativa OU Card de Login */}
+      {isLoggedIn ? (
+        <main className={styles.sessionCard}>
+          <div className={styles.sessionAvatar}>
+            {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+          </div>
+          <span className={styles.sessionTag}>✦ CONECTADO</span>
+          <h1 className={styles.sessionTitle}>Sessão Ativa</h1>
+          <p className={styles.sessionInfo}>
+            Você já está autenticado no Job Search como{" "}
+            <strong>{user?.name || "Candidato"}</strong>
+            <br />
+            <span className={styles.sessionEmail}>{user?.email}</span>
+          </p>
+
+          <div className={styles.sessionActions}>
+            <button
+              type="button"
+              className={styles.sessionPrimaryBtn}
+              onClick={() => navigate("/home")}
+            >
+              Explorar Vagas ➔
+            </button>
+            <button
+              type="button"
+              className={styles.sessionLogoutBtn}
+              onClick={handleLogout}
+              title="Encerrar a sessão atual"
+            >
+              🚪 Sair da Conta (Logout)
+            </button>
+          </div>
+
+          <div className={styles.backHome}>
+            <Link to="/" className={styles.backHomeLink}>
+              ← Voltar à Página Inicial
+            </Link>
+          </div>
+        </main>
+      ) : (
+        <main className={styles.main}>
+          <h1 className={styles.cardtitle}>Entrar</h1>
         <p>
           Não possui uma conta? <Link to="/Register">Cadastre-se</Link>
         </p>
 
         <div className={styles.otherlogins}>
-          <button type="button" className={styles.google}>
+          <button
+            type="button"
+            className={styles.google}
+            onClick={() => handleSocialLogin("Google")}
+            title="Entrar com Google"
+          >
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
@@ -77,7 +172,12 @@ function Login() {
             </svg>
             Google
           </button>
-          <button type="button" className={styles.linkedin}>
+          <button
+            type="button"
+            className={styles.linkedin}
+            onClick={() => handleSocialLogin("LinkedIn")}
+            title="Entrar com LinkedIn"
+          >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#0A66C2">
               <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
             </svg>
@@ -85,7 +185,14 @@ function Login() {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.loginForm}>
+        <form onSubmit={handleSubmit} className={styles.loginForm} noValidate>
+          {/* Mensagem de Erro Geral */}
+          {Object.keys(errors).length > 0 && (
+            <div className={styles.generalErrorAlert}>
+              ⚠️ Por favor, preencha os campos obrigatórios corretamente.
+            </div>
+          )}
+
           {/* E-mail */}
           <label htmlFor="email" className={styles.label}>
             E-mail:
@@ -96,10 +203,19 @@ function Login() {
             placeholder="xxxxxxx@gmail.com"
             name="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (errors.email) {
+                setErrors((prev) => ({ ...prev, email: undefined }));
+              }
+            }}
             className={styles.input}
+            style={{ borderColor: errors.email ? "#ef4444" : undefined }}
             required
           />
+          {errors.email && (
+            <span className={styles.errorMessage}>{errors.email}</span>
+          )}
 
           {/* Senha */}
           <label htmlFor="password" className={styles.label}>
@@ -111,10 +227,19 @@ function Login() {
             placeholder="********"
             name="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (errors.password) {
+                setErrors((prev) => ({ ...prev, password: undefined }));
+              }
+            }}
             className={styles.input}
+            style={{ borderColor: errors.password ? "#ef4444" : undefined }}
             required
           />
+          {errors.password && (
+            <span className={styles.errorMessage}>{errors.password}</span>
+          )}
 
           {/* Opções: Lembrar de mim e Esqueci a senha */}
           <div className={styles.optionsRow}>
@@ -131,7 +256,13 @@ function Login() {
             </a>
           </div>
 
-          <Button type="submit" target="/" Text="Entrar" className={styles.loginButton} />
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={styles.loginButton}
+          >
+            {isSubmitting ? "Entrando..." : "Entrar"}
+          </button>
         </form>
 
         <div className={styles.backHome}>
@@ -140,6 +271,14 @@ function Login() {
           </Link>
         </div>
       </main>
+      )}
+
+      {/* Toast de feedback de ação */}
+      {toastMessage && (
+        <div className={styles.toastNotification}>
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

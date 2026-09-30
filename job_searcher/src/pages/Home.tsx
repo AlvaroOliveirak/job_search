@@ -1,15 +1,22 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { UserJobMatch, MatchStatus } from "../types/job";
 import { jobStorageService } from "../services/jobStorage";
-import JobCard from "../components/JobCard";
-import JobModal from "../components/JobModal";
+import { JobCard, JobModal, Logo } from "../components";
 import styles from "../styles/home.module.css";
+import { useAuth } from "../context/AuthContext";
 
 export function Home() {
+  const { isLoggedIn, user, logout } = useAuth();
+  const navigate = useNavigate();
   const [matches, setMatches] = useState<UserJobMatch[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   // Estados dos Filtros
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -18,6 +25,16 @@ export function Home() {
 
   // Estado do Modal de Detalhes
   const [selectedMatch, setSelectedMatch] = useState<UserJobMatch | null>(null);
+
+  // Mensagem condicional de resultado de ação (Requisito 8 da AV1)
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((prev) => (prev === msg ? null : prev));
+    }, 2800);
+  };
 
   // Carrega as vagas usando a camada de serviço (Repository)
   const loadJobs = async () => {
@@ -35,14 +52,49 @@ export function Home() {
   };
 
   useEffect(() => {
-    loadJobs();
+    let isActive = true;
+
+    const fetchJobs = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await jobStorageService.fetchJobs();
+        if (isActive) {
+          setMatches(data);
+        }
+      } catch (err) {
+        if (isActive) {
+          setError("Falha ao carregar as vagas. Tente novamente mais tarde.");
+          console.error(err);
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void fetchJobs();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
-  // Manipulação de favoritos via serviço
+  // Manipulação de favoritos via serviço com feedback visual (Requisito 8)
   const handleToggleFavorite = async (matchId: number) => {
     try {
       const updated = await jobStorageService.toggleFavorite(matchId);
       setMatches(updated);
+      const target = updated.find((m) => m.id === matchId);
+      if (target) {
+        showToast(
+          target.is_favorite
+            ? `⭐ Vaga "${target.job.title}" salva nos favoritos!`
+            : `Vaga "${target.job.title}" removida dos favoritos.`
+        );
+      }
       if (selectedMatch && selectedMatch.id === matchId) {
         setSelectedMatch((prev) =>
           prev ? { ...prev, is_favorite: !prev.is_favorite } : null
@@ -53,11 +105,12 @@ export function Home() {
     }
   };
 
-  // Manipulação de status (ex: Candidatado / Descartada) via serviço
+  // Manipulação de status via serviço com feedback visual (Requisito 8)
   const handleUpdateStatus = async (matchId: number, status: MatchStatus) => {
     try {
       const updated = await jobStorageService.updateStatus(matchId, status);
       setMatches(updated);
+      showToast(`✓ Etapa da vaga atualizada para "${status}" com sucesso!`);
       if (selectedMatch && selectedMatch.id === matchId) {
         setSelectedMatch((prev) => (prev ? { ...prev, status } : null));
       }
@@ -86,16 +139,32 @@ export function Home() {
     <div className={styles.container}>
       {/* Barra de Navegação */}
       <header className={styles.navbar}>
-        <Link to="/" className={styles.brand}>
-          <span>⚡</span> JobSearcher
-        </Link>
+        <Logo size={42} showTagline={true} taglineText="Carreiras & Match IA" asLink={true} />
         <nav className={styles.navLinks}>
           <Link to="/" className={styles.navLink}>
             Início
           </Link>
-          <Link to="/home" className={`${styles.navLink} ${styles.activeLink || ""}`} style={{ color: "#38bdf8" }}>
-            Vagas Recomendadas
+          <Link to="/home" className={styles.navLink} style={{ color: "#38bdf8", fontWeight: 600 }}>
+            Vagas
           </Link>
+          <Link to="/candidaturas" className={styles.navLink}>
+            Minhas Candidaturas
+          </Link>
+          {isLoggedIn && (
+            <div className={styles.userNavGroup}>
+              <span className={styles.userNamePill}>
+                👤 {user?.name?.split(" ")[0] || "Candidato"}
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className={styles.logoutBtn}
+                title="Encerrar sessão e voltar ao início"
+              >
+                🚪 Sair
+              </button>
+            </div>
+          )}
         </nav>
       </header>
 
@@ -214,6 +283,13 @@ export function Home() {
         onClose={() => setSelectedMatch(null)}
         onUpdateStatus={handleUpdateStatus}
       />
+
+      {/* Toast de feedback de ação (Requisito 8 da AV1) */}
+      {toastMessage && (
+        <div className={styles.toastNotification}>
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

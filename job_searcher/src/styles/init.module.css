@@ -7,7 +7,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(90deg, rgba(8, 18, 41, 0.95) 0%, rgba(15, 23, 42, 0.88) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(8, 18, 41, 0.95) 0%,
+    rgba(15, 23, 42, 0.88) 100%
+  );
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(56, 189, 248, 0.25);
@@ -55,6 +59,7 @@
 
 .titleHighlight {
   background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -625,3 +630,211 @@
   font-size: 13px;
   margin: 0;
 }
+
+/* --- Estados Condicionais de Autenticação --- */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.headerLoginBtn {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  color: #e2e8f0;
+  font-family: "Iceland", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.headerLoginBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #38bdf8;
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+}
+
+.headerNavLink {
+  color: #e2e8f0;
+  font-family: "Iceland", sans-serif;
+  font-size: 18px;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.headerNavLink:hover {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.userBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 20px;
+  color: #f1f5f9;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.userAvatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.logoutBtn {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  font-family: "Iceland", sans-serif;
+  font-size: 16px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logoutBtn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fee2e2;
+  border-color: #ef4444;
+}
+
+.loggedInBanner {
+  background: linear-gradient(135deg, rgba(8, 25, 55, 0.9), rgba(15, 30, 65, 0.85));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 14px;
+  padding: 26px 36px;
+  margin: 0 0 25px 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+}
+
+.welcomeTag {
+  display: inline-block;
+  font-family: "Iceland", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.loggedInTitle {
+  color: #f8fafc;
+  font-size: 24px;
+  margin-bottom: 8px;
+  font-family: "Zen Dots", sans-serif;
+}
+
+.loggedInText {
+  color: #cbd5e1;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  max-width: 680px;
+}
+
+.quickActions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.primaryActionBtn {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #0f172a;
+  font-family: "Goldman", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.primaryActionBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.6);
+  background: linear-gradient(135deg, #38bdf8 0%, #7dd3fc 100%);
+}
+
+.secondaryActionBtn {
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  font-family: "Goldman", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.secondaryActionBtn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #e0f2fe;
+  transform: translateY(-2px);
+}
+
+/* Toast de feedback de ação / logout (Requisito 8 da AV1) */
+.toastNotification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, rgba(8, 25, 55, 0.95), rgba(15, 30, 65, 0.95));
+  border: 1px solid #38bdf8;
+  color: #f0f9ff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+  animation: slideInToast 0.3s ease-out;
+}
+
+@keyframes slideInToast {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+

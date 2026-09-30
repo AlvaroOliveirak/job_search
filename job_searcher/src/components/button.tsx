@@ -23,7 +23,7 @@ function Button({
 }: ButtonProps) {
   const content = children ?? Text;
 
-  if (target && !disabled) {
+  if (target && type !== "submit" && !disabled) {
     return (
       <Link onClick={onClick} to={target} className={className}>
         {content}

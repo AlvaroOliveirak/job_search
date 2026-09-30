@@ -11,7 +11,7 @@ export interface Job {
   created_at: string;
 }
 
-export type MatchStatus = "new" | "viewed" | "applied" | "discarded";
+export type MatchStatus = "new" | "viewed" | "applied" | "interview" | "rejected" | "discarded";
 
 export interface UserJobMatch {
   id: number;

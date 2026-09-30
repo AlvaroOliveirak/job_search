@@ -2,7 +2,7 @@ import React from "react";
 import type { UserJobMatch } from "../types/job";
 import styles from "../styles/jobCard.module.css";
 
-interface JobCardProps {
+export interface JobCardProps {
   match: UserJobMatch;
   onViewDetails: (match: UserJobMatch) => void;
   onToggleFavorite: (matchId: number) => void;
