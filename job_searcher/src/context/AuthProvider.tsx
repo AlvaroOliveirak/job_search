@@ -1,21 +1,8 @@
-import React, { createContext, useContext, useState } from "react";
-
-export interface User {
-  name: string;
-  email: string;
-}
-
-interface AuthContextType {
-  isLoggedIn: boolean;
-  user: User | null;
-  login: (email: string, name?: string) => void;
-  logout: () => void;
-  toggleAuth: () => void;
-}
+// src/context/AuthProvider.tsx
+import React, { useState } from "react";
+import { AuthContext, type User } from "./AuthContext";
 
 const STORAGE_AUTH_KEY = "job_search_auth";
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function extractNameFromEmail(email: string): string {
   const localPart = email.split("@")[0] || "Candidato";
@@ -56,26 +43,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const login = (email: string, name?: string) => {
-    const formattedName = name || extractNameFromEmail(email);
-    const userData: User = {
-      email,
-      name: formattedName || "Álvaro Oliveira",
-    };
+    const finalName = name || extractNameFromEmail(email);
+    const loggedUser: User = { email, name: finalName };
     setIsLoggedIn(true);
-    setUser(userData);
+    setUser(loggedUser);
     localStorage.setItem(
       STORAGE_AUTH_KEY,
-      JSON.stringify({ isLoggedIn: true, user: userData })
+      JSON.stringify({ isLoggedIn: true, user: loggedUser })
     );
   };
 
   const logout = () => {
     setIsLoggedIn(false);
     setUser(null);
-    localStorage.setItem(
-      STORAGE_AUTH_KEY,
-      JSON.stringify({ isLoggedIn: false, user: null })
-    );
+    localStorage.removeItem(STORAGE_AUTH_KEY);
   };
 
   const toggleAuth = () => {
@@ -93,12 +74,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth deve ser utilizado dentro de um AuthProvider");
-  }
-  return context;
-};
-
-export default AuthContext;
+export default AuthProvider;

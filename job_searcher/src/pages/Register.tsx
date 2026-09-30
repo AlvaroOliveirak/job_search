@@ -3,7 +3,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "../styles/register.module.css";
 import { ResumeUpload } from "../components";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 interface FormErrors {
   name?: string;

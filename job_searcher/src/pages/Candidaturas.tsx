@@ -5,7 +5,7 @@ import type { UserJobMatch, MatchStatus } from "../types/job";
 import { jobStorageService } from "../services/jobStorage";
 import { JobModal, Logo } from "../components";
 import styles from "../styles/candidaturas.module.css";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 type FilterTab = "all" | "applied" | "interview" | "discarded";
 
@@ -30,20 +30,29 @@ export function Candidaturas() {
     }, 2800);
   };
 
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const data = await jobStorageService.fetchJobs();
-      setMatches(data);
-    } catch (err) {
-      console.error("Erro ao carregar candidaturas:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadData();
+    let isActive = true;
+
+    const fetchCandidaturas = async () => {
+      try {
+        const data = await jobStorageService.fetchJobs();
+        if (isActive) {
+          setMatches(data);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar candidaturas:", err);
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void fetchCandidaturas();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   const handleUpdateStatus = async (matchId: number, status: MatchStatus) => {

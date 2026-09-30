@@ -4,7 +4,7 @@ import type { UserJobMatch, MatchStatus } from "../types/job";
 import { jobStorageService } from "../services/jobStorage";
 import { JobCard, JobModal, Logo } from "../components";
 import styles from "../styles/home.module.css";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 export function Home() {
   const { isLoggedIn, user, logout } = useAuth();
