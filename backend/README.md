@@ -1,14 +1,14 @@
-# ☕ Job Search — Back-End Spring Boot 3
+# ☕ Job Search — Back-End Spring Boot 4
 
-API RESTful corporativa desenvolvida em **Java 17/21** com **Spring Boot 3.3.4**, responsável pelas regras de negócio, autenticação, controle de acesso e persistência de dados da plataforma **Job Search & Match IA**.
+API RESTful corporativa desenvolvida em **Java 21 LTS** com **Spring Boot 4.1.1**, responsável pelas regras de negócio, autenticação, controle de acesso e persistência de dados da plataforma **Job Search & Match IA**.
 
 ---
 
 ## 🏛️ Arquitetura e Tecnologias
 
-- **Java 17 / 21 & Spring Boot 3.3.4**
-- **Spring Data JPA & Hibernate:** Mapeamento objeto-relacional (ORM) e consultas especializadas.
-- **Spring Security 6 & JWT (io.jsonwebtoken 0.12.6):** Autenticação stateless via Bearer Token e criptografia de senhas com BCrypt.
+- **Java 21 LTS & Spring Boot 4.1.1**
+- **Spring Data JPA & Hibernate 7:** Mapeamento objeto-relacional (ORM) e consultas especializadas.
+- **Spring Security 7 & JWT (io.jsonwebtoken 0.12.6):** Autenticação stateless via Bearer Token e criptografia de senhas com BCrypt.
 - **Banco de Dados H2 (In-Memory):** Configurado out-of-the-box para testes imediatos sem necessidade de instalação de banco local. Suporte transparente para PostgreSQL.
 - **DataSeeder Automático:** Popula o banco com usuários (`alvarooliver1802@gmail.com` / `123456`), perfis de busca e vagas iniciais compatíveis com o frontend React.
 - **Maven Wrapper (`./mvnw` / `mvnw.cmd`):** Permite rodar o projeto em qualquer máquina sem precisar ter o Maven instalado previamente.

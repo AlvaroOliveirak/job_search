@@ -16,7 +16,7 @@ public class HealthController {
         return ResponseEntity.ok(Map.of(
                 "status", "ok",
                 "message", "Job Searcher Spring Boot API está operacional",
-                "framework", "Spring Boot 3.3.4",
+                "framework", "Spring Boot 4.1.1 (Java 21 LTS)",
                 "version", "1.0.0"
         ));
     }
