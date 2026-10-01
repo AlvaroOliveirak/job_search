@@ -86,10 +86,6 @@ function Register() {
     }, 1200);
   };
 
-  const handleSocialRegister = (provider: string) => {
-    login(`usuario.${provider.toLowerCase()}@email.com`, `Usuário ${provider}`);
-    navigate("/home");
-  };
 
   return (
     <div className={styles.pageContainer}>

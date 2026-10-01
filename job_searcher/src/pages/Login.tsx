@@ -62,10 +62,6 @@ function Login() {
     navigate("/home");
   };
 
-  const handleSocialLogin = (provider: string) => {
-    login(`candidato.${provider.toLowerCase()}@email.com`, `Candidato (${provider})`);
-    navigate("/home");
-  };
 
   return (
     <div className={styles.pageContainer}>
