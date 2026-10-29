@@ -63,6 +63,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/profiles", "/api/profiles/**").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/api/profiles", "/api/profiles/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/profiles", "/api/profiles/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/skills", "/api/skills/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 // Todas as outras rotas exigem autenticação
                 .anyRequest().authenticated()
