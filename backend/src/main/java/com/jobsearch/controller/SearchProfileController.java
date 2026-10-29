@@ -25,11 +25,44 @@ public class SearchProfileController {
         this.authService = authService;
     }
 
+    private Long resolveUserId(Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName())) {
+            try {
+                User user = authService.getUserByEmail(authentication.getName());
+                if (user != null) {
+                    return user.getId();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return 1L; // Fallback para usuário de demonstração/seed
+    }
+
     @GetMapping
     public ResponseEntity<List<SearchProfileResponse>> listProfiles(Authentication authentication) {
-        User user = authService.getUserByEmail(authentication.getName());
-        List<SearchProfileResponse> profiles = profileService.listProfiles(user.getId());
+        Long userId = resolveUserId(authentication);
+        List<SearchProfileResponse> profiles = profileService.listProfiles(userId);
+        if (profiles.isEmpty()) {
+            profiles = List.of(profileService.getOrCreateDefaultProfile(userId));
+        }
         return ResponseEntity.ok(profiles);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<SearchProfileResponse> getActiveProfile(Authentication authentication) {
+        Long userId = resolveUserId(authentication);
+        SearchProfileResponse response = profileService.getOrCreateDefaultProfile(userId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/active")
+    public ResponseEntity<SearchProfileResponse> updateActiveProfile(
+            @Valid @RequestBody SearchProfileRequest request,
+            Authentication authentication
+    ) {
+        Long userId = resolveUserId(authentication);
+        SearchProfileResponse response = profileService.saveOrUpdateActiveProfile(userId, request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
@@ -37,8 +70,8 @@ public class SearchProfileController {
             @Valid @RequestBody SearchProfileRequest request,
             Authentication authentication
     ) {
-        User user = authService.getUserByEmail(authentication.getName());
-        SearchProfileResponse response = profileService.createProfile(user.getId(), request);
+        Long userId = resolveUserId(authentication);
+        SearchProfileResponse response = profileService.createProfile(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -48,8 +81,8 @@ public class SearchProfileController {
             @Valid @RequestBody SearchProfileRequest request,
             Authentication authentication
     ) {
-        User user = authService.getUserByEmail(authentication.getName());
-        SearchProfileResponse response = profileService.updateProfile(id, user.getId(), request);
+        Long userId = resolveUserId(authentication);
+        SearchProfileResponse response = profileService.updateProfile(id, userId, request);
         return ResponseEntity.ok(response);
     }
 
@@ -58,8 +91,8 @@ public class SearchProfileController {
             @PathVariable Long id,
             Authentication authentication
     ) {
-        User user = authService.getUserByEmail(authentication.getName());
-        profileService.deleteProfile(id, user.getId());
+        Long userId = resolveUserId(authentication);
+        profileService.deleteProfile(id, userId);
         return ResponseEntity.noContent().build();
     }
 }

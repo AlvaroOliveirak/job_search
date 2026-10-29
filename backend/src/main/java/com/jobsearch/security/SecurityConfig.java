@@ -60,6 +60,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/jobs/sync/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/jobs/refresh").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/profiles", "/api/profiles/**").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/profiles", "/api/profiles/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/profiles", "/api/profiles/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 // Todas as outras rotas exigem autenticação
                 .anyRequest().authenticated()
