@@ -15,9 +15,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.File;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class JobService {
@@ -78,6 +85,7 @@ public class JobService {
         }
 
         for (JobSyncDTO.ScrapedJobItem item : syncDTO.getJobs()) {
+            LocalDateTime parsedPostedAt = parsePostedAt(item.getPostedAt());
             Job job = jobRepository.findByJobHash(item.getJobHash())
                     .orElseGet(() -> {
                         Job newJob = new Job(
@@ -88,10 +96,15 @@ public class JobService {
                                 item.getUrl(),
                                 item.getDescription(),
                                 item.getSource(),
-                                LocalDateTime.now()
+                                parsedPostedAt
                         );
                         return jobRepository.save(newJob);
                     });
+
+            if (job.getPostedAt() == null && parsedPostedAt != null) {
+                job.setPostedAt(parsedPostedAt);
+                jobRepository.save(job);
+            }
 
             for (User user : targetUsers) {
                 UserJobMatch match = matchRepository.findByUserIdAndJobId(user.getId(), job.getId())
@@ -100,6 +113,7 @@ public class JobService {
                 if (item.getScore() != null) {
                     match.setScore(item.getScore());
                 }
+                match.setMatchedAt(LocalDateTime.now());
 
                 UserJobMatch saved = matchRepository.save(match);
                 result.add(new UserJobMatchResponse(saved));
@@ -107,5 +121,71 @@ public class JobService {
         }
 
         return result;
+    }
+
+    public Map<String, Object> triggerManualRefresh(Long userId) {
+        boolean scriptExecuted = false;
+        String executionMessage = "Busca executada com sucesso.";
+
+        // 1. Tenta executar o pipeline Python (scraper real + matcher)
+        try {
+            File scriptFile = new File("../python-service/main.py");
+            if (!scriptFile.exists()) {
+                scriptFile = new File("python-service/main.py");
+            }
+
+            if (scriptFile.exists()) {
+                ProcessBuilder pb = new ProcessBuilder("python3", scriptFile.getName());
+                pb.directory(scriptFile.getParentFile());
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
+
+                boolean finished = process.waitFor(40, TimeUnit.SECONDS);
+                if (finished && process.exitValue() == 0) {
+                    scriptExecuted = true;
+                    executionMessage = "Vagas coletadas ao vivo da API da Gupy e sincronizadas via IA com sucesso.";
+                } else if (!finished) {
+                    process.destroyForcibly();
+                    executionMessage = "A sincronização externa levou mais tempo do que o esperado. Vagas em cache exibidas.";
+                } else {
+                    executionMessage = "Processo do scraper finalizou com código " + process.exitValue() + ". Vagas em cache exibidas.";
+                }
+            } else {
+                executionMessage = "Script python-service/main.py não localizado no caminho padrão. Vagas atuais mantidas.";
+            }
+        } catch (Exception e) {
+            executionMessage = "Aviso ao rodar scraper: " + e.getMessage() + ". Retornando dados atuais.";
+        }
+
+        // 2. Retorna a lista atualizada de vagas do usuário
+        List<UserJobMatchResponse> matches = getMatchesForUser(userId != null ? userId : 1L, null, null, null, null);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", scriptExecuted ? "success" : "info");
+        response.put("message", executionMessage);
+        response.put("total_jobs", matches.size());
+        response.put("updated_at", LocalDateTime.now());
+        response.put("matches", matches);
+
+        return response;
+    }
+
+    private LocalDateTime parsePostedAt(String postedAtStr) {
+        if (postedAtStr == null || postedAtStr.isBlank()) {
+            return LocalDateTime.now();
+        }
+        try {
+            return OffsetDateTime.parse(postedAtStr).toLocalDateTime();
+        } catch (Exception e1) {
+            try {
+                return Instant.parse(postedAtStr).atZone(ZoneId.systemDefault()).toLocalDateTime();
+            } catch (Exception e2) {
+                try {
+                    return LocalDateTime.parse(postedAtStr);
+                } catch (Exception e3) {
+                    return LocalDateTime.now();
+                }
+            }
+        }
     }
 }

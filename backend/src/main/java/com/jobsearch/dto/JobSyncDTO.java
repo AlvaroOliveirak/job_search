@@ -16,6 +16,9 @@ public class JobSyncDTO {
         private String source;
         private Double score;
 
+        @JsonProperty("posted_at")
+        private String postedAt;
+
         public String getJobHash() {
             return jobHash;
         }
@@ -78,6 +81,14 @@ public class JobSyncDTO {
 
         public void setScore(Double score) {
             this.score = score;
+        }
+
+        public String getPostedAt() {
+            return postedAt;
+        }
+
+        public void setPostedAt(String postedAt) {
+            this.postedAt = postedAt;
         }
     }
 

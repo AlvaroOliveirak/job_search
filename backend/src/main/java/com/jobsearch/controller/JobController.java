@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/jobs")
@@ -24,6 +25,19 @@ public class JobController {
         this.authService = authService;
     }
 
+    private Long resolveUserId(Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName())) {
+            try {
+                User user = authService.getUserByEmail(authentication.getName());
+                if (user != null) {
+                    return user.getId();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return 1L; // Fallback para usuário de demonstração/seed
+    }
+
     @GetMapping
     public ResponseEntity<List<UserJobMatchResponse>> getJobs(
             @RequestParam(required = false) String status,
@@ -32,14 +46,14 @@ public class JobController {
             @RequestParam(required = false) String search,
             Authentication authentication
     ) {
-        User user = authService.getUserByEmail(authentication.getName());
+        Long userId = resolveUserId(authentication);
         MatchStatus matchStatus = null;
         if (status != null && !status.isBlank()) {
             matchStatus = MatchStatus.fromValue(status);
         }
 
         List<UserJobMatchResponse> matches = jobService.getMatchesForUser(
-                user.getId(),
+                userId,
                 matchStatus,
                 isFavorite,
                 minScore,
@@ -48,13 +62,20 @@ public class JobController {
         return ResponseEntity.ok(matches);
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, Object>> refreshJobs(Authentication authentication) {
+        Long userId = resolveUserId(authentication);
+        Map<String, Object> result = jobService.triggerManualRefresh(userId);
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserJobMatchResponse> getJobById(
             @PathVariable Long id,
             Authentication authentication
     ) {
-        User user = authService.getUserByEmail(authentication.getName());
-        UserJobMatchResponse match = jobService.getMatchById(id, user.getId());
+        Long userId = resolveUserId(authentication);
+        UserJobMatchResponse match = jobService.getMatchById(id, userId);
         return ResponseEntity.ok(match);
     }
 
@@ -64,8 +85,8 @@ public class JobController {
             @RequestBody MatchUpdateDTO updateDTO,
             Authentication authentication
     ) {
-        User user = authService.getUserByEmail(authentication.getName());
-        UserJobMatchResponse updated = jobService.updateMatch(id, user.getId(), updateDTO);
+        Long userId = resolveUserId(authentication);
+        UserJobMatchResponse updated = jobService.updateMatch(id, userId, updateDTO);
         return ResponseEntity.ok(updated);
     }
 }
