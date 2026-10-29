@@ -17,28 +17,27 @@
 
 ## 📁 Estrutura do Repositório
 
-O projeto é estruturado em monorepo modular:
+O projeto é estruturado em monorepo modular com o Front-End executando na raiz:
 
 ```plaintext
 job_search/
-├── job_searcher/       # 🚀 Front-End Principal (Escopo da Entrega AV1)
-│   ├── src/
-│   │   ├── components/ # Componentes reutilizáveis (Navbar, JobCard, JobModal, ResumeUpload, etc.)
-│   │   ├── context/    # Autenticação global (AuthContext, AuthProvider, useAuth)
-│   │   ├── data/       # Semente inicial de vagas (vagas.json)
-│   │   ├── pages/      # Telas (Init, Home, Candidaturas, Login, Register)
-│   │   ├── services/   # Camada de persistência (jobStorage.ts)
-│   │   ├── styles/     # CSS Modules escopados por componente
-│   │   └── types/      # Tipagens TypeScript (job.ts, match.ts)
-│   ├── package.json
-│   └── vite.config.ts
-├── backend/            # ☕ Back-End RESTful em Java 21 LTS + Spring Boot 3
-└── python-service/     # 🐍 Microserviço Python (Scraping, IA/NLP Matcher e Telegram Bot)
+├── src/                # 🚀 Front-End Principal (React 19 + TypeScript + Vite)
+│   ├── components/     # Componentes reutilizáveis (Navbar, JobCard, JobModal, ResumeUpload, etc.)
+│   ├── context/        # Autenticação global (AuthContext, AuthProvider, useAuth)
+│   ├── data/           # Semente inicial de vagas (vagas.json)
+│   ├── pages/          # Telas (Init, Home, Candidaturas, Login, Register)
+│   ├── services/       # Camada de persistência (jobStorage.ts)
+│   ├── styles/         # CSS Modules escopados por componente
+│   └── types/          # Tipagens TypeScript (job.ts, match.ts)
+├── backend/            # ☕ Back-End RESTful em Java 21 LTS + Spring Boot 3/4
+├── python-service/     # 🐍 Microserviço Python (Scraping, IA/NLP Matcher e Telegram Bot)
+├── package.json
+└── vite.config.ts
 ```
 
 ---
 
-## 🚀 Como Executar o Front-End (AV1)
+## 🚀 Como Executar o Front-End
 
 ### Pré-requisitos
 - **Node.js** (versão 18+ recomendada)
@@ -46,22 +45,17 @@ job_search/
 
 ### Passo a Passo
 
-1. Acesse o diretório da aplicação front-end:
-   ```bash
-   cd job_searcher
-   ```
-
-2. Instale as dependências:
+1. Na raiz do projeto (`job_search`), instale as dependências:
    ```bash
    npm install
    ```
 
-3. Inicie o servidor de desenvolvimento:
+2. Inicie o servidor de desenvolvimento:
    ```bash
    npm run dev
    ```
 
-4. Abra no seu navegador:
+3. Abra no seu navegador:
    ```text
    http://localhost:5173
    ```

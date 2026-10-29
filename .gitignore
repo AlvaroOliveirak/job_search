@@ -18,10 +18,14 @@ backend/.env
 
 # Node & Frontend
 node_modules/
-job_searcher/node_modules/
-job_searcher/dist/
 dist/
+dist-ssr/
+*.local
 *.log
+
+# Documentos e Guias Locais
+Guia_Defesa*
+*.docx
 
 # IDE & OS
 .vscode/
