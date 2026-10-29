@@ -50,7 +50,7 @@ function Login() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!validate()) {
@@ -58,8 +58,17 @@ function Login() {
     }
 
     setIsSubmitting(true);
-    login(email.trim());
-    navigate("/home");
+    try {
+      await login(email.trim(), password);
+      showToast("✓ Login realizado com sucesso!");
+      navigate("/home");
+    } catch (err: unknown) {
+      const error = err as Error;
+      setErrors({ password: error.message || "E-mail ou senha inválidos." });
+      showToast(error.message || "Falha ao realizar login.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 
