@@ -92,3 +92,4 @@ export function isRecentJob(dateString?: string | null, daysThreshold: number = 
     return false;
   }
 }
+
