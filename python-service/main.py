@@ -4,6 +4,7 @@ Fluxo completo: Scraping Gupy Real -> NLP Matching -> Alertas Telegram -> Sincro
 """
 import sys
 import io
+import argparse
 
 if sys.platform == "win32":
     try:
@@ -16,24 +17,55 @@ from ai_matcher import AIMatcher
 from telegram_notifier import TelegramNotifier
 from sync_client import SpringBootSyncClient
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Pipeline de Scraping Gupy & Matching IA")
+    parser.add_argument("--user_id", type=int, default=1, help="ID do usuário no Spring Boot")
+    parser.add_argument("--name", type=str, default="Candidato", help="Nome do candidato")
+    parser.add_argument("--keywords", type=str, default="React, TypeScript, Java, Spring Boot, CSS Modules, Git, REST", help="Habilidades/Keywords do usuário")
+    parser.add_argument("--chat_id", type=str, default="123456789", help="Telegram Chat ID para alertas")
+    return parser.parse_args()
+
+def extract_search_queries(keywords_str: str) -> list[str]:
+    """Extrai até 5 termos relevantes das skills do usuário para guiar a busca na Gupy."""
+    terms = [k.strip() for k in keywords_str.split(",") if k.strip()]
+    cleaned_terms = []
+    for t in terms:
+        cleaned = t.strip()
+        if len(cleaned) >= 2 and cleaned.lower() not in [c.lower() for c in cleaned_terms]:
+            cleaned_terms.append(cleaned)
+    
+    # Seleciona as primeiras 4 skills como queries diretas
+    queries = cleaned_terms[:4]
+    
+    # Se tiver menos de 3 termos, complementa com termos gerais de tecnologia
+    defaults = ["desenvolvedor", "fullstack", "tecnologia"]
+    for d in defaults:
+        if len(queries) < 3 and d not in [q.lower() for q in queries]:
+            queries.append(d)
+            
+    return queries or ["desenvolvedor"]
+
 def run_pipeline():
+    args = parse_args()
+    user_id = args.user_id
+    user_name = args.name
+    user_keywords = args.keywords
+    user_chat_id = args.chat_id
+
     print("=" * 65)
     print("🤖 JOB SEARCH - PIPELINE DE COLETA REAL GUPY & MATCH IA")
     print("=" * 65)
 
-    # 1. Perfil do Candidato Alvo (usuário seed do Spring Boot)
-    user_id = 1
-    user_name = "Álvaro Oliveira"
-    user_chat_id = "123456789"
-    user_keywords = "React, TypeScript, Java, Spring Boot, CSS Modules, Git, REST"
-
     print(f"\n👤 Candidato Alvo: {user_name} (ID: {user_id})")
-    print(f"🎯 Perfil de Busca / Keywords: {user_keywords}")
+    print(f"🎯 Perfil de Busca / Skills: {user_keywords}")
 
-    # 2. Executa o Scraper Real na API do Portal Gupy
+    # 1. Extrai queries a partir das habilidades cadastradas pelo usuário
+    queries = extract_search_queries(user_keywords)
+    print(f"🔎 Termos de busca derivados das skills: {queries}")
+
+    # 2. Executa o Scraper Real na API do Portal Gupy com os termos das skills
     print("\n🔍 1. Coletando vagas REAIS diretamente do Portal da Gupy...")
     scraper = JobScraper()
-    queries = ["react", "java", "python", "fullstack", "desenvolvedor junior"]
     jobs = scraper.fetch_tech_jobs(queries=queries, limit_per_query=6)
     print(f"\n✓ Sucesso: {len(jobs)} vagas reais coletadas e deduplicadas via SHA-256.")
 
