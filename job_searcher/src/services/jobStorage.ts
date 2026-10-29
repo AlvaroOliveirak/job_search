@@ -3,6 +3,7 @@ import vagasSeed from "../data/vagas.json";
 import { apiRequest, getAuthToken } from "./api";
 
 const STORAGE_KEY = "job_search_matches";
+const LAST_UPDATED_KEY = "job_search_last_updated";
 
 // Dados locais iniciais carregados a partir de src/data/vagas.json (Fallback / Offline)
 const INITIAL_MOCK_JOBS: UserJobMatch[] = vagasSeed as unknown as UserJobMatch[];
@@ -19,22 +20,24 @@ export const jobStorageService = {
    * Caso contrário, recorre ao cache local.
    */
   async fetchJobs(): Promise<UserJobMatch[]> {
-    const token = getAuthToken();
-
-    if (token) {
-      try {
-        const remoteJobs = await apiRequest<UserJobMatch[]>("/api/jobs");
-        if (remoteJobs && Array.isArray(remoteJobs)) {
-          // Atualiza o cache local para resiliência offline
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteJobs));
-          return remoteJobs;
+    try {
+      const remoteJobs = await apiRequest<UserJobMatch[]>("/api/jobs");
+      if (remoteJobs && Array.isArray(remoteJobs) && remoteJobs.length > 0) {
+        // Atualiza o cache local para resiliência offline
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteJobs));
+        if (!localStorage.getItem(LAST_UPDATED_KEY)) {
+          localStorage.setItem(
+            LAST_UPDATED_KEY,
+            remoteJobs[0]?.matched_at || new Date().toISOString()
+          );
         }
-      } catch (err: unknown) {
-        console.warn(
-          "Não foi possível buscar vagas na API Spring Boot. Usando dados locais como fallback.",
-          (err as Error).message
-        );
+        return remoteJobs;
       }
+    } catch (err: unknown) {
+      console.warn(
+        "Não foi possível buscar vagas na API Spring Boot. Usando dados locais como fallback.",
+        (err as Error).message
+      );
     }
 
     // Fallback: carrega do LocalStorage ou mock inicial
@@ -54,6 +57,64 @@ export const jobStorageService = {
         }
       }, 200);
     });
+  },
+
+  /**
+   * Dispara a busca e atualização manual de vagas diretamente na API do Spring Boot (/api/jobs/refresh).
+   * O Spring Boot executa o pipeline Python de scraping na Gupy e IA, retornando as vagas atualizadas.
+   */
+  async manualRefreshJobs(): Promise<{
+    matches: UserJobMatch[];
+    updatedAt: string;
+    message: string;
+    totalJobs: number;
+  }> {
+    try {
+      const response = await apiRequest<{
+        status: string;
+        message: string;
+        total_jobs: number;
+        updated_at: string;
+        matches: UserJobMatch[];
+      }>("/api/jobs/refresh", {
+        method: "POST",
+      });
+
+      if (response && response.matches) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(response.matches));
+        const updatedTime = response.updated_at || new Date().toISOString();
+        localStorage.setItem(LAST_UPDATED_KEY, updatedTime);
+
+        return {
+          matches: response.matches,
+          updatedAt: updatedTime,
+          message: response.message || "Vagas atualizadas com sucesso a partir da API da Gupy.",
+          totalJobs: response.total_jobs || response.matches.length,
+        };
+      }
+    } catch (err: unknown) {
+      console.warn("Falha ao sincronizar via /api/jobs/refresh. Recorrendo ao cache local:", err);
+    }
+
+    // Fallback: busca vagas locais e atualiza o timestamp
+    const currentMatches = await this.fetchJobs();
+    const fallbackTimestamp = new Date().toISOString();
+    localStorage.setItem(LAST_UPDATED_KEY, fallbackTimestamp);
+
+    return {
+      matches: currentMatches,
+      updatedAt: fallbackTimestamp,
+      message: "Vagas carregadas a partir do cache local.",
+      totalJobs: currentMatches.length,
+    };
+  },
+
+  getLastUpdated(): string | null {
+    return localStorage.getItem(LAST_UPDATED_KEY);
+  },
+
+  setLastUpdated(timestamp: string): void {
+    localStorage.setItem(LAST_UPDATED_KEY, timestamp);
   },
 
   /**
