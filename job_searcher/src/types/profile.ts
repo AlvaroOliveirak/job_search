@@ -11,3 +11,4 @@ export interface SearchProfileRequest {
   keywords: string;
   minScore: number;
 }
+

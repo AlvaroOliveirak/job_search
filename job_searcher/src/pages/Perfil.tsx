@@ -1,7 +1,8 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Logo } from "../components";
 import { profileService } from "../services/profileService";
+import { searchSkills, type SkillItem } from "../data/skillsCatalog";
 import { useAuth } from "../hooks/useAuth";
 import styles from "../styles/perfil.module.css";
 
@@ -33,6 +34,12 @@ export function Perfil() {
   const [minScore, setMinScore] = useState<number>(70);
   const [telegramChatId, setTelegramChatId] = useState<string>("123456789");
 
+  // Estados do Autocomplete de Skills (Estilo LinkedIn)
+  const [suggestions, setSuggestions] = useState<SkillItem[]>([]);
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -47,6 +54,69 @@ export function Perfil() {
   const handleLogout = () => {
     logout();
     navigate("/");
+  };
+
+  // Fecha o dropdown de autocomplete ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Manipulador de digitação com busca em tempo real no catálogo de TI
+  const handleSkillInputChange = (value: string) => {
+    setNewSkill(value);
+    if (value.trim().length >= 1) {
+      const results = searchSkills(value, skills, 7);
+      setSuggestions(results);
+      setShowDropdown(results.length > 0);
+      setHighlightedIndex(-1);
+    } else {
+      setSuggestions([]);
+      setShowDropdown(false);
+    }
+  };
+
+  // Navegação por teclado no dropdown (Setas e Enter)
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (showDropdown && suggestions.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setHighlightedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : 0));
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : suggestions.length - 1));
+        return;
+      }
+      if (e.key === "Escape") {
+        setShowDropdown(false);
+        return;
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+          handleAddSkill(suggestions[highlightedIndex].name);
+        } else if (suggestions[0] && suggestions[0].name.toLowerCase() === newSkill.trim().toLowerCase()) {
+          handleAddSkill(suggestions[0].name);
+        } else {
+          handleAddSkill(newSkill);
+        }
+        setShowDropdown(false);
+        return;
+      }
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddSkill(newSkill);
+      setShowDropdown(false);
+    }
   };
 
   // Carrega o perfil ativo do usuário da API
@@ -252,25 +322,65 @@ export function Perfil() {
                 essas palavras-chave para ranquear as vagas e buscar novas oportunidades na Gupy.
               </p>
 
-              {/* Input para nova skill */}
-              <div className={styles.skillsInputRow}>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="Digite uma tecnologia (ex: Docker, GraphQL, Kubernetes) e clique em Adicionar..."
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddSkill(newSkill);
-                    }
-                  }}
-                />
+              {/* Input com Autocomplete inteligente para nova skill */}
+              <div className={styles.skillsInputRow} ref={dropdownRef}>
+                <div className={styles.autocompleteWrapper}>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    placeholder="Comece a digitar uma habilidade (ex: React, Java, Docker, PostgreSQL)..."
+                    value={newSkill}
+                    onChange={(e) => handleSkillInputChange(e.target.value)}
+                    onFocus={() => {
+                      if (newSkill.trim().length >= 1) {
+                        const results = searchSkills(newSkill, skills, 7);
+                        setSuggestions(results);
+                        setShowDropdown(results.length > 0);
+                      }
+                    }}
+                    onKeyDown={handleKeyDown}
+                    autoComplete="off"
+                  />
+
+                  {/* Dropdown Flutuante de Sugestões Padronizadas de TI */}
+                  {showDropdown && suggestions.length > 0 && (
+                    <ul className={styles.suggestionsDropdown}>
+                      {suggestions.map((item, index) => (
+                        <li
+                          key={item.name}
+                          className={`${styles.suggestionItem} ${
+                            highlightedIndex === index ? styles.suggestionItemActive : ""
+                          }`}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleAddSkill(item.name);
+                            setShowDropdown(false);
+                          }}
+                          onMouseEnter={() => setHighlightedIndex(index)}
+                        >
+                          <span className={styles.suggestionName}>
+                            🔍 {item.name}
+                          </span>
+                          <span className={styles.suggestionCategory}>
+                            {item.category}
+                          </span>
+                        </li>
+                      ))}
+                      <div className={styles.dropdownFooter}>
+                        <span>Dica: Use as setas ↑ ↓ e Enter para escolher</span>
+                        <span>{suggestions.length} sugestões</span>
+                      </div>
+                    </ul>
+                  )}
+                </div>
+
                 <button
                   type="button"
                   className={styles.addSkillBtn}
-                  onClick={() => handleAddSkill(newSkill)}
+                  onClick={() => {
+                    handleAddSkill(newSkill);
+                    setShowDropdown(false);
+                  }}
                 >
                   + Adicionar
                 </button>

@@ -181,6 +181,78 @@
 .skillsInputRow {
   display: flex;
   gap: 10px;
+  position: relative;
+}
+
+.autocompleteWrapper {
+  flex: 1;
+  position: relative;
+}
+
+.suggestionsDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #0b1120;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  border-radius: 12px;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 15px rgba(56, 189, 248, 0.2);
+  backdrop-filter: blur(16px);
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+}
+
+.suggestionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: #ffffff;
+}
+
+.suggestionItem:hover,
+.suggestionItemActive {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+}
+
+.suggestionName {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.suggestionCategory {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.suggestionItem:hover .suggestionCategory,
+.suggestionItemActive .suggestionCategory {
+  background: rgba(56, 189, 248, 0.25);
+  color: #e0f2fe;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.dropdownFooter {
+  padding: 8px 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
 }
 
 .addSkillBtn {
@@ -414,3 +486,4 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
