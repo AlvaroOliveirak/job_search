@@ -8,7 +8,7 @@ import urllib.request
 import urllib.error
 
 class SpringBootSyncClient:
-    def __init__(self, base_url: str = "http://localhost:8080"):
+    def __init__(self, base_url: str = "http://localhost:8082"):
         self.base_url = base_url.rstrip("/")
 
     def sync_jobs(self, user_id: int, scored_jobs: List[Dict[str, Any]]) -> Dict[str, Any]:
