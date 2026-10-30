@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import type { UserJobMatch, MatchStatus } from "../types/job";
 import styles from "../styles/jobModal.module.css";
+import { formatFullDateTime, formatRelativeTime } from "../utils/dateUtils";
 
 interface JobModalProps {
   match: UserJobMatch | null;
@@ -63,6 +64,12 @@ export const JobModal: React.FC<JobModalProps> = ({
             <div className={styles.metaItem}>
               <span className={styles.metaLabel}>Plataforma</span>
               <span className={styles.metaValue}>{job.source}</span>
+            </div>
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Publicada em</span>
+              <span className={styles.metaValue}>
+                {formatFullDateTime(job.posted_at || job.created_at)} ({formatRelativeTime(job.posted_at || job.created_at)})
+              </span>
             </div>
             <div className={styles.metaItem}>
               <span className={styles.metaLabel}>Status Atual</span>

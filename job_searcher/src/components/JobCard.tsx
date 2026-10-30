@@ -1,6 +1,7 @@
 import React from "react";
 import type { UserJobMatch } from "../types/job";
 import styles from "../styles/jobCard.module.css";
+import { formatRelativeTime, isRecentJob } from "../utils/dateUtils";
 
 export interface JobCardProps {
   match: UserJobMatch;
@@ -29,6 +30,11 @@ export const JobCard: React.FC<JobCardProps> = ({
             ★ {score}% Match
           </span>
           <span className={styles.sourceBadge}>{job.source}</span>
+          {isRecentJob(job.posted_at || job.created_at) && (
+            <span className={styles.recentBadge} title="Vaga publicada recentemente">
+              ⚡ Recente
+            </span>
+          )}
         </div>
 
         <button
@@ -50,6 +56,19 @@ export const JobCard: React.FC<JobCardProps> = ({
 
       <div className={styles.location}>
         <span>📍 {job.location || "Local não informado"}</span>
+      </div>
+
+      <div className={styles.dateRow}>
+        <span
+          className={styles.postedDate}
+          title={
+            job.posted_at
+              ? `Data original de publicação: ${new Date(job.posted_at).toLocaleString("pt-BR")}`
+              : "Data recente"
+          }
+        >
+          🕒 {formatRelativeTime(job.posted_at || job.created_at)}
+        </span>
       </div>
 
       <div className={styles.actions}>

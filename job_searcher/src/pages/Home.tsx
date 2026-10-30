@@ -5,12 +5,15 @@ import { jobStorageService } from "../services/jobStorage";
 import { JobCard, JobModal, Logo } from "../components";
 import styles from "../styles/home.module.css";
 import { useAuth } from "../hooks/useAuth";
+import { formatFullDateTime, formatRelativeTime } from "../utils/dateUtils";
 
 export function Home() {
   const { isLoggedIn, user, logout } = useAuth();
   const navigate = useNavigate();
   const [matches, setMatches] = useState<UserJobMatch[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(jobStorageService.getLastUpdated());
   const [error, setError] = useState<string | null>(null);
 
   const handleLogout = () => {
@@ -33,7 +36,7 @@ export function Home() {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage((prev) => (prev === msg ? null : prev));
-    }, 2800);
+    }, 3200);
   };
 
   // Carrega as vagas usando a camada de serviço (Repository)
@@ -43,11 +46,28 @@ export function Home() {
     try {
       const data = await jobStorageService.fetchJobs();
       setMatches(data);
+      setLastUpdated(jobStorageService.getLastUpdated());
     } catch (err) {
       setError("Falha ao carregar as vagas. Tente novamente mais tarde.");
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Executa busca e scraping manualmente a pedido do usuário
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const result = await jobStorageService.manualRefreshJobs();
+      setMatches(result.matches);
+      setLastUpdated(result.updatedAt);
+      showToast(`✨ ${result.totalJobs} vagas sincronizadas com sucesso a partir da API da Gupy!`);
+    } catch (err) {
+      console.error("Erro ao atualizar vagas manualmente:", err);
+      showToast("⚠️ Não foi possível sincronizar no momento. Vagas locais mantidas.");
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -62,6 +82,7 @@ export function Home() {
         const data = await jobStorageService.fetchJobs();
         if (isActive) {
           setMatches(data);
+          setLastUpdated(jobStorageService.getLastUpdated());
         }
       } catch (err) {
         if (isActive) {
@@ -170,10 +191,43 @@ export function Home() {
 
       {/* Hero Section */}
       <section className={styles.hero}>
-        <h1 className={styles.heroTitle}>Oportunidades em Destaque</h1>
-        <p className={styles.heroSubtitle}>
-          Vagas ranqueadas pelo motor de pontuação de acordo com o seu perfil de busca.
-        </p>
+        <div className={styles.heroContent}>
+          <div>
+            <h1 className={styles.heroTitle}>Oportunidades em Destaque</h1>
+            <p className={styles.heroSubtitle}>
+              Vagas ranqueadas pelo motor de pontuação de acordo com o seu perfil de busca.
+            </p>
+          </div>
+          <div className={styles.heroActions}>
+            <button
+              className={styles.refreshButton}
+              onClick={handleManualRefresh}
+              disabled={isRefreshing || loading}
+              title="Disparar busca e atualização manual de vagas via API"
+            >
+              <span className={isRefreshing ? styles.spinIcon : ""}>🔄</span>
+              <span>{isRefreshing ? "Buscando vagas na Gupy..." : "Buscar Vagas Manualmente"}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Barra de Status e Atualização */}
+        <div className={styles.syncStatusBar}>
+          <div className={styles.statusIndicator}>
+            <span className={styles.statusDot}></span>
+            <span className={styles.statusText}>
+              Última atualização:{" "}
+              <strong>
+                {lastUpdated
+                  ? `${formatFullDateTime(lastUpdated)} (${formatRelativeTime(lastUpdated)})`
+                  : "Aguardando sincronização"}
+              </strong>
+            </span>
+          </div>
+          <span className={styles.badgeTotalJobs}>
+            ⚡ {matches.length} vagas indexadas no sistema
+          </span>
+        </div>
       </section>
 
       {/* Barra de Filtros e Busca */}
@@ -230,9 +284,19 @@ export function Home() {
             <span style={{ fontSize: "40px", marginBottom: "12px" }}>⚠️</span>
             <h2 className={styles.feedbackTitle}>Ops! Algo deu errado</h2>
             <p className={styles.feedbackText}>{error}</p>
-            <button className={styles.actionButton} onClick={loadJobs}>
-              Tentar novamente
-            </button>
+            <div style={{ display: "flex", gap: "12px", marginTop: "12px", flexWrap: "wrap", justifyContent: "center" }}>
+              <button className={styles.actionButton} onClick={loadJobs}>
+                Tentar novamente
+              </button>
+              <button
+                className={styles.refreshButton}
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+              >
+                <span className={isRefreshing ? styles.spinIcon : ""}>🔄</span>
+                <span>Buscar Vagas Manualmente</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -242,18 +306,28 @@ export function Home() {
             <span style={{ fontSize: "42px", marginBottom: "12px" }}>🔍</span>
             <h2 className={styles.feedbackTitle}>Nenhuma vaga encontrada</h2>
             <p className={styles.feedbackText}>
-              Não localizamos nenhuma oportunidade com os filtros atuais. Tente buscar outros termos ou remover o filtro de favoritos.
+              Não localizamos nenhuma oportunidade com os filtros atuais. Tente buscar outros termos ou buscar novas vagas na API.
             </p>
-            <button
-              className={styles.actionButton}
-              onClick={() => {
-                setSearchTerm("");
-                setOnlyFavorites(false);
-                setMinScore(0);
-              }}
-            >
-              Limpar filtros
-            </button>
+            <div style={{ display: "flex", gap: "12px", marginTop: "12px", flexWrap: "wrap", justifyContent: "center" }}>
+              <button
+                className={styles.actionButton}
+                onClick={() => {
+                  setSearchTerm("");
+                  setOnlyFavorites(false);
+                  setMinScore(0);
+                }}
+              >
+                Limpar filtros
+              </button>
+              <button
+                className={styles.refreshButton}
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+              >
+                <span className={isRefreshing ? styles.spinIcon : ""}>🔄</span>
+                <span>Buscar Vagas Manualmente</span>
+              </button>
+            </div>
           </div>
         )}
 
