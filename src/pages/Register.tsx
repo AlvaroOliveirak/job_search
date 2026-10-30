@@ -24,7 +24,7 @@ function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
-  const { isLoggedIn, user, login, logout } = useAuth();
+  const { isLoggedIn, user, login, register, logout } = useAuth();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -70,7 +70,7 @@ function Register() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!validate()) {
@@ -78,12 +78,18 @@ function Register() {
     }
 
     setIsSubmitting(true);
-    setSuccessMessage("Cadastro realizado com sucesso! Conectando perfil...");
-
-    setTimeout(() => {
-      login(email, name);
-      navigate("/home");
-    }, 1200);
+    try {
+      await register(name.trim(), email.trim(), password);
+      setSuccessMessage("Cadastro realizado com sucesso! Conectando perfil...");
+      setTimeout(() => {
+        navigate("/home");
+      }, 900);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setErrors({ email: error.message || "Erro ao realizar cadastro." });
+      showToast(error.message || "Falha no cadastro.");
+      setIsSubmitting(false);
+    }
   };
 
 

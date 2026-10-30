@@ -104,7 +104,7 @@ export function Candidaturas() {
   const getStatusBadge = (status: MatchStatus) => {
     switch (status) {
       case "interview":
-        return <span className={`${styles.statusBadge} ${styles.statusInterview}`}>🎯 Entrevista Agendada</span>;
+        return <span className={`${styles.statusBadge} ${styles.statusInterview}`}>🎯 Entrevista Realizada</span>;
       case "applied":
         return <span className={`${styles.statusBadge} ${styles.statusApplied}`}>📨 Candidatura Enviada</span>;
       case "viewed":
