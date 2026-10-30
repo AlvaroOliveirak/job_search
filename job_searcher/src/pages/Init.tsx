@@ -105,6 +105,9 @@ function Init() {
             <Link to="/candidaturas" className={styles.headerNavLink}>
               Minhas Candidaturas
             </Link>
+            <Link to="/perfil" className={styles.headerNavLink}>
+              Meu Perfil
+            </Link>
             <div
               className={styles.userBadge}
               title={`Conectado como ${user?.email || "Candidato"}`}

@@ -171,6 +171,9 @@ export function Home() {
           <Link to="/candidaturas" className={styles.navLink}>
             Minhas Candidaturas
           </Link>
+          <Link to="/perfil" className={styles.navLink}>
+            Meu Perfil
+          </Link>
           {isLoggedIn && (
             <div className={styles.userNavGroup}>
               <span className={styles.userNamePill}>
