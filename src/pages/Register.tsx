@@ -10,6 +10,7 @@ interface FormErrors {
   email?: string;
   password?: string;
   confirmPassword?: string;
+  api?: string; // erro vindo do servidor
 }
 
 function Register() {
@@ -73,6 +74,9 @@ function Register() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
+    // Limpa erro de API anterior
+    setErrors((prev) => ({ ...prev, api: undefined }));
+
     if (!validate()) {
       return;
     }
@@ -86,8 +90,9 @@ function Register() {
       }, 900);
     } catch (err: unknown) {
       const error = err as Error;
-      setErrors({ email: error.message || "Erro ao realizar cadastro." });
-      showToast(error.message || "Falha no cadastro.");
+      const apiMsg = error.message || "Erro ao realizar cadastro. Tente novamente.";
+      setErrors({ api: apiMsg });
+      showToast(`❌ ${apiMsg}`);
       setIsSubmitting(false);
     }
   };
@@ -171,19 +176,26 @@ function Register() {
             Já possui uma conta?<Link to="/login"> Entre</Link>
           </p>
 
-        {/* Mensagens de Sucesso e Erro Geral (Requisito 8: Mensagens condicionais) */}
+        {/* Mensagens de Sucesso e Erro (Requisito 8: Mensagens condicionais) */}
         {successMessage && (
           <div className={styles.successAlert}>
             ✓ {successMessage}
           </div>
         )}
 
-        {Object.keys(errors).length > 0 && !successMessage && (
+        {/* Erro vindo da API (servidor offline, e-mail duplicado, etc.) */}
+        {!successMessage && errors.api && (
+          <div className={styles.generalErrorAlert} style={{ borderColor: "#ef4444", color: "#ef4444" }}>
+            ⚠️ {errors.api}
+          </div>
+        )}
+
+        {/* Erro de validação dos campos (quando não há erro de API) */}
+        {!successMessage && !errors.api && (errors.name || errors.email || errors.password || errors.confirmPassword) && (
           <div className={styles.generalErrorAlert}>
             ⚠️ Por favor, corrija os erros apontados no formulário.
           </div>
         )}
-
 
         {/* Formulário Controlado (Requisito 5 da AV1) */}
         <form onSubmit={handleSubmit} className={styles.registerForm} noValidate>

@@ -7,6 +7,7 @@ import { useAuth } from "../hooks/useAuth";
 interface LoginFormErrors {
   email?: string;
   password?: string;
+  api?: string; // erro vindo do servidor
 }
 
 function Login() {
@@ -53,6 +54,9 @@ function Login() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
+    // Limpa erro de API anterior antes de tentar novamente
+    setErrors((prev) => ({ ...prev, api: undefined }));
+
     if (!validate()) {
       return;
     }
@@ -64,8 +68,10 @@ function Login() {
       navigate("/home");
     } catch (err: unknown) {
       const error = err as Error;
-      setErrors({ password: error.message || "E-mail ou senha inválidos." });
-      showToast(error.message || "Falha ao realizar login.");
+      const apiMsg = error.message || "Falha ao realizar login. Tente novamente.";
+      // Seta o erro no campo específico de erros de API (não de validação)
+      setErrors({ api: apiMsg });
+      showToast(`❌ ${apiMsg}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -152,8 +158,15 @@ function Login() {
 
 
         <form onSubmit={handleSubmit} className={styles.loginForm} noValidate>
-          {/* Mensagem de Erro Geral */}
-          {Object.keys(errors).length > 0 && (
+          {/* Erro vindo da API (servidor offline, credenciais erradas, etc.) */}
+          {errors.api && (
+            <div className={styles.generalErrorAlert} style={{ borderColor: "#ef4444", color: "#ef4444" }}>
+              ⚠️ {errors.api}
+            </div>
+          )}
+
+          {/* Erro de validação dos campos (quando não há erro de API) */}
+          {!errors.api && (errors.email || errors.password) && (
             <div className={styles.generalErrorAlert}>
               ⚠️ Por favor, preencha os campos obrigatórios corretamente.
             </div>

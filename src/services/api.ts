@@ -33,24 +33,70 @@ export async function apiRequest<T>(
 
   const url = `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+    });
+  } catch (networkErr) {
+    // Erro de rede: backend offline, CORS bloqueado, sem internet, etc.
+    const msg = networkErr instanceof Error ? networkErr.message.toLowerCase() : "";
+    if (
+      msg.includes("failed to fetch") ||
+      msg.includes("networkerror") ||
+      msg.includes("load failed") ||
+      msg.includes("fetch")
+    ) {
+      const err = new Error(
+        "Não foi possível conectar ao servidor. Verifique se o backend está em execução ou tente novamente mais tarde."
+      );
+      (err as { status?: number }).status = 0;
+      throw err;
+    }
+    throw networkErr;
+  }
 
   if (!response.ok) {
-    let errorMessage = `Erro HTTP ${response.status}: ${response.statusText}`;
+    let errorMessage: string;
+
+    switch (response.status) {
+      case 400:
+        errorMessage = "Dados inválidos. Verifique os campos e tente novamente.";
+        break;
+      case 401:
+        errorMessage = "E-mail ou senha incorretos.";
+        break;
+      case 403:
+        errorMessage = "Acesso negado. Você não tem permissão para esta ação.";
+        break;
+      case 404:
+        errorMessage = "Recurso não encontrado.";
+        break;
+      case 409:
+        errorMessage = "Este e-mail já está cadastrado. Tente fazer login.";
+        break;
+      case 422:
+        errorMessage = "Dados inválidos enviados ao servidor.";
+        break;
+      case 500:
+      case 502:
+      case 503:
+        errorMessage = "Erro interno no servidor. Tente novamente em alguns instantes.";
+        break;
+      default:
+        errorMessage = `Erro inesperado (código ${response.status}). Tente novamente.`;
+    }
+
+    // Tenta sobrescrever com a mensagem específica que o backend enviou
     try {
       const errorJson = await response.json();
-      if (errorJson.message) {
-        errorMessage = errorJson.message;
-      } else if (errorJson.detail) {
-        errorMessage = errorJson.detail;
-      } else if (errorJson.error) {
-        errorMessage = errorJson.error;
+      const backendMsg = errorJson.message || errorJson.detail || errorJson.error;
+      if (backendMsg && typeof backendMsg === "string") {
+        errorMessage = backendMsg;
       }
     } catch {
-      // payload não é JSON
+      // payload não é JSON — mantém a mensagem amigável acima
     }
 
     const error = new Error(errorMessage);
@@ -64,4 +110,3 @@ export async function apiRequest<T>(
 
   return response.json() as Promise<T>;
 }
-
