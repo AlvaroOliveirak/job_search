@@ -5,12 +5,15 @@ import { jobStorageService } from "../services/jobStorage";
 import { JobCard, JobModal, Logo } from "../components";
 import styles from "../styles/home.module.css";
 import { useAuth } from "../hooks/useAuth";
+import { formatFullDateTime, formatRelativeTime } from "../utils/dateUtils";
 
 export function Home() {
   const { isLoggedIn, user, logout } = useAuth();
   const navigate = useNavigate();
   const [matches, setMatches] = useState<UserJobMatch[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(jobStorageService.getLastUpdated());
   const [error, setError] = useState<string | null>(null);
 
   const handleLogout = () => {
@@ -33,7 +36,7 @@ export function Home() {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage((prev) => (prev === msg ? null : prev));
-    }, 2800);
+    }, 3200);
   };
 
   // Carrega as vagas usando a camada de serviço (Repository)
@@ -43,11 +46,28 @@ export function Home() {
     try {
       const data = await jobStorageService.fetchJobs();
       setMatches(data);
+      setLastUpdated(jobStorageService.getLastUpdated());
     } catch (err) {
       setError("Falha ao carregar as vagas. Tente novamente mais tarde.");
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Executa busca e scraping manualmente a pedido do usuário
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const result = await jobStorageService.manualRefreshJobs();
+      setMatches(result.matches);
+      setLastUpdated(result.updatedAt);
+      showToast(`✨ ${result.totalJobs} vagas sincronizadas com sucesso a partir da API da Gupy!`);
+    } catch (err) {
+      console.error("Erro ao atualizar vagas manualmente:", err);
+      showToast("⚠️ Não foi possível sincronizar no momento. Vagas locais mantidas.");
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -62,6 +82,7 @@ export function Home() {
         const data = await jobStorageService.fetchJobs();
         if (isActive) {
           setMatches(data);
+          setLastUpdated(jobStorageService.getLastUpdated());
         }
       } catch (err) {
         if (isActive) {
@@ -119,71 +140,133 @@ export function Home() {
     }
   };
 
-  // Filtragem reativa na memória
+  // Filtragem no cliente para resposta instantânea
   const filteredMatches = useMemo(() => {
     return matches.filter((item) => {
-      const searchLower = searchTerm.toLowerCase();
-      const matchesSearch =
-        item.job.title.toLowerCase().includes(searchLower) ||
-        item.job.company.toLowerCase().includes(searchLower) ||
-        (item.job.location && item.job.location.toLowerCase().includes(searchLower));
+      const title = item.job.title.toLowerCase();
+      const company = item.job.company.toLowerCase();
+      const description = (item.job.description || "").toLowerCase();
+      const search = searchTerm.toLowerCase();
 
-      const matchesFavorite = onlyFavorites ? item.is_favorite : true;
+      const matchesSearch =
+        title.includes(search) ||
+        company.includes(search) ||
+        description.includes(search);
+
+      const matchesFav = onlyFavorites ? item.is_favorite : true;
       const matchesScore = item.score >= minScore;
 
-      return matchesSearch && matchesFavorite && matchesScore;
+      return matchesSearch && matchesFav && matchesScore;
     });
   }, [matches, searchTerm, onlyFavorites, minScore]);
 
   return (
     <div className={styles.container}>
-      {/* Barra de Navegação */}
+      {/* 1. Navbar */}
       <header className={styles.navbar}>
         <Logo size={42} showTagline={true} taglineText="Carreiras & Match IA" asLink={true} />
         <nav className={styles.navLinks}>
           <Link to="/" className={styles.navLink}>
             Início
           </Link>
-          <Link to="/home" className={styles.navLink} style={{ color: "#38bdf8", fontWeight: 600 }}>
+          <Link to="/home" className={`${styles.navLink} ${styles.navLinkActive || ""}`}>
             Vagas
           </Link>
           <Link to="/candidaturas" className={styles.navLink}>
-            Minhas Candidaturas
+            Candidaturas
           </Link>
-          {isLoggedIn && (
+          <Link to="/perfil" className={styles.navLink}>
+            Perfil
+          </Link>
+          {isLoggedIn ? (
             <div className={styles.userNavGroup}>
               <span className={styles.userNamePill}>
-                👤 {user?.name || "Candidato"}
+                👤 {user?.name || user?.email?.split("@")[0] || "Alvaro Oliver"}
               </span>
               <button
-                type="button"
                 onClick={handleLogout}
                 className={styles.logoutBtn}
-                title="Encerrar sessão e voltar ao início"
+                title="Encerrar sessão"
               >
-                🚪 Sair
+                Sair
               </button>
             </div>
+          ) : (
+            <Link to="/login" className={styles.navLink}>
+              Entrar
+            </Link>
           )}
         </nav>
       </header>
 
-      {/* Hero Section */}
+      {/* 2. Hero Section */}
       <section className={styles.hero}>
-        <h1 className={styles.heroTitle}>Oportunidades em Destaque</h1>
-        <p className={styles.heroSubtitle}>
-          Vagas ranqueadas pelo motor de pontuação de acordo com o seu perfil de busca.
-        </p>
+        <div className={styles.heroContent}>
+          <div>
+            <span className={styles.heroTag}>Oportunidades em Tecnologia</span>
+            <h1 className={styles.heroTitle}>Oportunidades Recomendadas</h1>
+            <p className={styles.heroSubtitle}>
+              Vagas selecionadas por IA e coletadas diretamente da API oficial da Gupy de acordo com seu perfil.
+            </p>
+          </div>
+
+          <div className={styles.heroActions}>
+            <button
+              className={styles.refreshButton}
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              title="Buscar novas vagas ao vivo na API da Gupy e recalcular compatibilidade com IA"
+            >
+              {isRefreshing ? (
+                <>
+                  <span className={styles.spinIcon}>🔄</span>
+                  <span>Varrendo Gupy & IA...</span>
+                </>
+              ) : (
+                <>
+                  <span>🚀</span>
+                  <span>Buscar Vagas Manualmente</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Barra de Status de Sincronização */}
+        <div className={styles.syncStatusBar}>
+          <div className={styles.statusIndicator}>
+            <span className={styles.statusDot}></span>
+            <span>
+              Fonte: <strong>Gupy Live API</strong> (Dedup SHA-256 + NLP Matcher)
+            </span>
+          </div>
+
+          <div className={styles.statusMeta}>
+            <span
+              className={styles.statusMetaItem}
+              title={
+                lastUpdated
+                  ? `Sincronização completa em: ${formatFullDateTime(lastUpdated)}`
+                  : "Aguardando sincronização"
+              }
+            >
+              🕒 Última varredura: <strong>{formatRelativeTime(lastUpdated)}</strong>
+            </span>
+            <span className={styles.statusMetaItem}>
+              📊 <strong>{matches.length}</strong> vagas disponíveis
+            </span>
+          </div>
+        </div>
       </section>
 
-      {/* Barra de Filtros e Busca */}
+      {/* 3. Filtros e Busca */}
       <section className={styles.filtersBar}>
         <div className={styles.searchInputWrapper}>
           <span className={styles.searchIcon}>🔍</span>
           <input
             type="text"
             className={styles.searchInput}
-            placeholder="Buscar por cargo, tecnologia ou empresa..."
+            placeholder="Buscar por cargo, tecnologia (ex: React, Java, Docker) ou empresa..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -195,84 +278,81 @@ export function Home() {
             value={minScore}
             onChange={(e) => setMinScore(Number(e.target.value))}
           >
-            <option value={0}>Todas as notas</option>
-            <option value={70}>Aderência +70%</option>
-            <option value={85}>Alta Aderência +85%</option>
-            <option value={90}>Top Matches +90%</option>
+            <option value={0}>Qualquer Aderência</option>
+            <option value={70}>Match ≥ 70%</option>
+            <option value={80}>Match ≥ 80%</option>
+            <option value={90}>Match Alto (≥ 90%)</option>
           </select>
 
           <button
-            className={`${styles.favToggleBtn} ${onlyFavorites ? styles.favToggleActive : ""}`}
+            className={`${styles.favToggleBtn} ${
+              onlyFavorites ? styles.favToggleActive : ""
+            }`}
             onClick={() => setOnlyFavorites(!onlyFavorites)}
           >
-            <span>{onlyFavorites ? "♥" : "♡"}</span>
-            <span>Apenas Favoritas</span>
+            {onlyFavorites ? "♥ Apenas Favoritas" : "♡ Todas as Vagas"}
           </button>
         </div>
       </section>
 
-      {/* Renderização Condicional de Estados (Requisito Acadêmico) */}
+      {/* 4. Lista / Grid de Vagas */}
       <main>
-        {/* 1. Estado de Carregamento (Loading) */}
-        {loading && (
+        {loading ? (
           <div className={styles.feedbackContainer}>
             <div className={styles.spinner}></div>
-            <h2 className={styles.feedbackTitle}>Buscando vagas no banco de dados...</h2>
+            <h3 className={styles.feedbackTitle}>Carregando oportunidades...</h3>
             <p className={styles.feedbackText}>
-              Aguarde enquanto cruzamos as melhores oportunidades para você.
+              Avaliando aderência e consultando repositório de vagas.
             </p>
           </div>
-        )}
-
-        {/* 2. Estado de Erro */}
-        {!loading && error && (
+        ) : error ? (
           <div className={styles.feedbackContainer}>
-            <span style={{ fontSize: "40px", marginBottom: "12px" }}>⚠️</span>
-            <h2 className={styles.feedbackTitle}>Ops! Algo deu errado</h2>
+            <span style={{ fontSize: "36px", marginBottom: "12px" }}>⚠️</span>
+            <h3 className={styles.feedbackTitle}>Erro ao consultar vagas</h3>
             <p className={styles.feedbackText}>{error}</p>
             <button className={styles.actionButton} onClick={loadJobs}>
               Tentar novamente
             </button>
           </div>
-        )}
-
-        {/* 3. Estado de Lista Vazia (Empty State) */}
-        {!loading && !error && filteredMatches.length === 0 && (
+        ) : filteredMatches.length === 0 ? (
           <div className={styles.feedbackContainer}>
-            <span style={{ fontSize: "42px", marginBottom: "12px" }}>🔍</span>
-            <h2 className={styles.feedbackTitle}>Nenhuma vaga encontrada</h2>
+            <span style={{ fontSize: "36px", marginBottom: "12px" }}>🔎</span>
+            <h3 className={styles.feedbackTitle}>Nenhuma vaga encontrada</h3>
             <p className={styles.feedbackText}>
-              Não localizamos nenhuma oportunidade com os filtros atuais. Tente buscar outros termos ou remover o filtro de favoritos.
+              Nenhuma oportunidade corresponde aos filtros aplicados. Tente ajustar o termo de busca ou clique em 'Buscar Vagas Manualmente'.
             </p>
-            <button
-              className={styles.actionButton}
-              onClick={() => {
-                setSearchTerm("");
-                setOnlyFavorites(false);
-                setMinScore(0);
-              }}
-            >
-              Limpar filtros
-            </button>
+            <div style={{ display: "flex", gap: "10px" }}>
+              {(searchTerm || onlyFavorites || minScore > 0) && (
+                <button
+                  className={styles.actionButton}
+                  onClick={() => {
+                    setSearchTerm("");
+                    setOnlyFavorites(false);
+                    setMinScore(0);
+                  }}
+                >
+                  Limpar Filtros
+                </button>
+              )}
+              <button
+                className={styles.actionButton}
+                onClick={handleManualRefresh}
+                style={{ background: "#2563eb" }}
+              >
+                Buscar Vagas na Gupy
+              </button>
+            </div>
           </div>
-        )}
-
-        {/* 4. Estado de Sucesso (Lista Renderizada) */}
-        {!loading && !error && filteredMatches.length > 0 && (
-          <div>
-            <div style={{ marginBottom: "16px", color: "rgba(255,255,255,0.7)", fontSize: "14px" }}>
-              Exibindo <strong>{filteredMatches.length}</strong> {filteredMatches.length === 1 ? "vaga compatível" : "vagas compatíveis"}
-            </div>
-            <div className={styles.jobsGrid}>
-              {filteredMatches.map((match) => (
-                <JobCard
-                  key={match.id}
-                  match={match}
-                  onViewDetails={(item) => setSelectedMatch(item)}
-                  onToggleFavorite={handleToggleFavorite}
-                />
-              ))}
-            </div>
+        ) : (
+          <div className={styles.jobsGrid}>
+            {filteredMatches.map((match) => (
+              <JobCard
+                key={match.id}
+                match={match}
+                onViewDetails={(m) => setSelectedMatch(m)}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            ))}
           </div>
         )}
       </main>
@@ -284,7 +364,7 @@ export function Home() {
         onUpdateStatus={handleUpdateStatus}
       />
 
-      {/* Toast de feedback de ação (Requisito 8 da AV1) */}
+      {/* Toast Notification (Feedback de Ações do Requisito 8) */}
       {toastMessage && (
         <div className={styles.toastNotification}>
           <span>{toastMessage}</span>
@@ -295,4 +375,3 @@ export function Home() {
 }
 
 export default Home;
-

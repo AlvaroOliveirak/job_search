@@ -25,7 +25,7 @@ function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
-  const { isLoggedIn, user, login, register, logout } = useAuth();
+  const { isLoggedIn, user, register, logout } = useAuth();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {

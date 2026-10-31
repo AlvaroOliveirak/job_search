@@ -3,6 +3,7 @@ package com.jobsearch.security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -57,6 +58,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/health/**").permitAll()
                 .requestMatchers("/api/jobs/sync/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/jobs/refresh").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/profiles", "/api/profiles/**").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/profiles", "/api/profiles/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/profiles", "/api/profiles/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/skills", "/api/skills/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 // Todas as outras rotas exigem autenticação
                 .anyRequest().authenticated()

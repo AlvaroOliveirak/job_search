@@ -135,6 +135,9 @@ export function Candidaturas() {
           >
             Minhas Candidaturas
           </Link>
+          <Link to="/perfil" className={styles.navLink}>
+            Perfil
+          </Link>
           {isLoggedIn && (
             <div className={styles.userNavGroup}>
               <span className={styles.userNamePill}>
