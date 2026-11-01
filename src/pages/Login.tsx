@@ -79,7 +79,8 @@ function Login() {
 
 
   return (
-    <div className={styles.pageContainer}>
+    <div className={styles.pageWrapper}>
+      <div className={styles.pageContainer}>
       {/* Área à esquerda: Apelo & Boas-vindas */}
       <div className={styles.appealsection}>
         <div className={styles.maintitle}>
@@ -258,6 +259,7 @@ function Login() {
           <span>{toastMessage}</span>
         </div>
       )}
+      </div>
     </div>
   );
 }

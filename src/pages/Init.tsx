@@ -1,7 +1,8 @@
+// src/pages/Init.tsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "../styles/init.module.css";
-import { Button, Footer } from "../components";
+import { Footer } from "../components";
 import { useAuth } from "../hooks/useAuth";
 
 function Init() {
@@ -17,17 +18,18 @@ function Init() {
 
   const handleLogout = () => {
     logout();
-    showToast("✓ Você saiu da sua conta com sucesso!");
+    showToast("✓ Você encerrou sua sessão com sucesso!");
   };
 
   return (
     <>
+      {/* 1. Header Bar */}
       <header className={styles.headerBar}>
         <div className={styles.brandWrapper}>
           <div className={styles.logoBadge} title="Job Search - Conectando Carreiras">
             <svg
-              width="46"
-              height="46"
+              width="44"
+              height="44"
               viewBox="0 0 48 48"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -39,10 +41,6 @@ function Init() {
                   <stop offset="50%" stopColor="#0284c7" />
                   <stop offset="100%" stopColor="#818cf8" />
                 </linearGradient>
-                <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="2.5" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
               </defs>
               <rect
                 x="3"
@@ -50,10 +48,9 @@ function Init() {
                 width="42"
                 height="42"
                 rx="12"
-                fill="rgba(10, 25, 47, 0.95)"
+                fill="rgba(20, 27, 45, 0.95)"
                 stroke="url(#logoGradient)"
-                strokeWidth="2"
-                filter="url(#logoGlow)"
+                strokeWidth="1.5"
               />
               <path
                 d="M17 17C17 14.7909 18.7909 13 21 13H27C29.2091 13 31 14.7909 31 17V19H17V17Z"
@@ -69,7 +66,7 @@ function Init() {
                 rx="4"
                 fill="rgba(56, 189, 248, 0.12)"
                 stroke="url(#logoGradient)"
-                strokeWidth="2"
+                strokeWidth="1.5"
               />
               <circle cx="23" cy="27" r="4.5" stroke="#38bdf8" strokeWidth="1.8" />
               <circle cx="23" cy="27" r="1.5" fill="#818cf8" />
@@ -146,7 +143,7 @@ function Init() {
             Bem-vindo de volta, {user?.name || "Candidato"}!
           </h2>
           <p className={styles.loggedInText}>
-            Seu perfil está conectado e sincronizado com o motor de compatibilidade IA.
+            Seu perfil está sincronizado com o motor de compatibilidade IA.
             Acompanhe o andamento dos seus processos seletivos ou descubra novas vagas abertas hoje.
           </p>
           <div className={styles.quickActions}>
@@ -160,284 +157,295 @@ function Init() {
         </div>
       )}
 
-      <div className={styles.aside}>
-        {/* Lado Esquerdo: Título e Métricas (Opção 3) */}
-        <div className={styles.asideLeft}>
-          <h1>Encontre as vagas mais adequadas para você</h1>
-          <p className={styles.asideSubtitle}>
-            Conectamos os melhores profissionais às empresas mais inovadoras.
-          </p>
+      {/* 2. Hero Section */}
+      <section className={styles.hero}>
+        <div className={styles.heroTag}>
+          <span className={styles.heroTagDot} />
+          <span>VAGAS EM TECNOLOGIA & TRIAGEM INTELIGENTE</span>
+        </div>
 
-          <div className={styles.metricsContainer}>
-            <div className={styles.metricItem}>
-              <span className={styles.metricNumber}>+5.000</span>
-              <span className={styles.metricLabel}>Vagas ativas</span>
-            </div>
-            <div className={styles.metricItem}>
-              <span className={styles.metricNumber}>+800</span>
-              <span className={styles.metricLabel}>Empresas parceiras</span>
-            </div>
-            <div className={styles.metricItem}>
-              <span className={styles.metricNumber}>48h</span>
-              <span className={styles.metricLabel}>
-                Tempo médio de resposta
-              </span>
-            </div>
+        <h1 className={styles.mainTitle}>
+          Encontre as vagas mais adequadas para você,{" "}
+          <span className={styles.mainTitleHighlight}>sem perder tempo com processos cegos.</span>
+        </h1>
+
+        <p className={styles.heroDescription}>
+          Conectamos profissionais qualificados às empresas mais inovadoras do mercado com análise automatizada de currículo, pretensão salarial clara e feedback ágil.
+        </p>
+
+        <div className={styles.ctaGroup}>
+          {isLoggedIn ? (
+            <>
+              <Link to="/home" className={styles.ctaButton}>
+                Explorar Vagas Recomendadas ➔
+              </Link>
+              <Link to="/candidaturas" className={styles.heroSecondaryBtn}>
+                Acompanhar Candidaturas
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/Register" className={styles.ctaButton}>
+                Cadastrar Perfil Grátis ➔
+              </Link>
+              <Link to="/home" className={styles.heroSecondaryBtn}>
+                Explorar Vagas Abertas
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Faixa de Métricas */}
+        <div className={styles.metricsBar}>
+          <div className={styles.metricItem}>
+            <span className={styles.metricValue}>+5.000</span>
+            <span className={styles.metricLabel}>Vagas ativas no Brasil & Remotas</span>
+          </div>
+          <div className={styles.metricItem}>
+            <span className={styles.metricValue}>+800</span>
+            <span className={styles.metricLabel}>Empresas parceiras conectadas</span>
+          </div>
+          <div className={styles.metricItem}>
+            <span className={styles.metricValue}>48h</span>
+            <span className={styles.metricLabel}>Tempo médio de retorno das etapas</span>
+          </div>
+          <div className={styles.metricItem}>
+            <span className={styles.metricValue}>100%</span>
+            <span className={styles.metricLabel}>Gratuito para candidatos sempre</span>
           </div>
         </div>
-      </div>
-      {/* boas-vindas/explicação do objetivo */}
-      <div className={styles.intro}>
-        <h2 className={styles.introTitle}>Bem-vindo ao Job Search!</h2>
-        <p className={styles.introText}>
-          O <strong>Job Search</strong> é uma plataforma criada para simplificar
-          e impulsionar a sua busca por oportunidades profissionais. Nosso
-          objetivo é oferecer uma experiência centralizada e inteligente,
-          conectando talentos às melhores empresas do mercado.
-        </p>
-        <p className={styles.introText}>
-          Além de explorar e filtrar vagas recomendadas, a plataforma conta com
-          uma{" "}
-          <strong>
-            automatização para buscar vagas com base no seu currículo
-          </strong>
-          : o sistema analisa suas habilidades e trajetória profissional para
-          encontrar e indicar instantaneamente as vagas que dão match perfeito
-          com o seu perfil.
-        </p>
-      </div>
+      </section>
 
-      {/* 1. Como Funciona (3 Passos) */}
+      {/* 3. Como Funciona (3 Passos) */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Como Funciona</h2>
+          <span className={styles.sectionTag}>✦ PASSO A PASSO</span>
+          <h2 className={styles.sectionTitle}>Como Funciona o Job Search</h2>
           <p className={styles.sectionSubtitle}>
-            Três passos simples para encontrar o seu próximo emprego.
+            Três passos objetivos para acelerar a sua recolocação profissional.
           </p>
         </div>
 
-        <div className={styles.stepsContainer}>
+        <div className={styles.stepsGrid}>
           <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>01</div>
-            <h3>Cadastre seu Perfil</h3>
-            <p>
-              Preencha suas habilidades, formação e pretensão salarial em menos
-              de 2 minutos.
+            <span className={styles.stepNumber}>PASSO 01</span>
+            <h3 className={styles.stepTitle}>Cadastre seu Perfil & Skills</h3>
+            <p className={styles.stepDescription}>
+              Defina suas principais competências técnicas, pretensão salarial e objetivos profissionais em menos de 2 minutos.
             </p>
           </div>
+
           <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>02</div>
-            <h3>Descubra Vagas Ideais</h3>
-            <p>
-              Explore oportunidades filtradas por tecnologia, regime remoto e
-              salário transparente.
+            <span className={styles.stepNumber}>PASSO 02</span>
+            <h3 className={styles.stepTitle}>Match Automatizado por IA</h3>
+            <p className={styles.stepDescription}>
+              Nosso algoritmo analisa seu currículo contra milhares de oportunidades e ranqueia as vagas com maior aderência ao seu perfil.
             </p>
           </div>
+
           <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>03</div>
-            <h3>Conecte-se e Contrate</h3>
-            <p>
-              Candidate-se com um clique e receba retorno direto dos
-              recrutadores das melhores empresas.
+            <span className={styles.stepNumber}>PASSO 03</span>
+            <h3 className={styles.stepTitle}>Candidatura & Feedback Ágil</h3>
+            <p className={styles.stepDescription}>
+              Candidate-se diretamente às vagas selecionadas e acompanhe cada etapa do processo com total clareza e previsibilidade.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 2. Categorias em Destaque */}
+      {/* 4. Categorias em Alta */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Categorias em Alta</h2>
+          <span className={styles.sectionTag}>✦ EXPLORE POR ÁREA</span>
+          <h2 className={styles.sectionTitle}>Categorias em Alta no Mercado</h2>
           <p className={styles.sectionSubtitle}>
-            Encontre oportunidades nas áreas com maior demanda do mercado.
+            Oportunidades com maior volume de contratações e salários competitivos.
           </p>
         </div>
 
         <div className={styles.categoriesGrid}>
           <div className={styles.categoryCard}>
-            <span className={styles.categoryIcon}>💻</span>
-            <div>
-              <h4>Desenvolvimento & Software</h4>
-              <span>+2.400 vagas abertas</span>
+            <div className={styles.categoryIcon}>💻</div>
+            <div className={styles.categoryInfo}>
+              <h4 className={styles.categoryTitle}>Desenvolvimento & Software</h4>
+              <span className={styles.categoryCount}>+2.400 vagas abertas</span>
             </div>
           </div>
+
           <div className={styles.categoryCard}>
-            <span className={styles.categoryIcon}>🎨</span>
-            <div>
-              <h4>Design & UX/UI</h4>
-              <span>+650 vagas abertas</span>
+            <div className={styles.categoryIcon}>🎨</div>
+            <div className={styles.categoryInfo}>
+              <h4 className={styles.categoryTitle}>Design & UX/UI</h4>
+              <span className={styles.categoryCount}>+650 vagas abertas</span>
             </div>
           </div>
+
           <div className={styles.categoryCard}>
-            <span className={styles.categoryIcon}>📊</span>
-            <div>
-              <h4>Dados & Inteligência Artificial</h4>
-              <span>+920 vagas abertas</span>
+            <div className={styles.categoryIcon}>📊</div>
+            <div className={styles.categoryInfo}>
+              <h4 className={styles.categoryTitle}>Dados & Inteligência Artificial</h4>
+              <span className={styles.categoryCount}>+920 vagas abertas</span>
             </div>
           </div>
+
           <div className={styles.categoryCard}>
-            <span className={styles.categoryIcon}>📢</span>
-            <div>
-              <h4>Marketing & Vendas</h4>
-              <span>+1.100 vagas abertas</span>
+            <div className={styles.categoryIcon}>📢</div>
+            <div className={styles.categoryInfo}>
+              <h4 className={styles.categoryTitle}>Marketing & Growth</h4>
+              <span className={styles.categoryCount}>+1.100 vagas abertas</span>
             </div>
           </div>
+
           <div className={styles.categoryCard}>
-            <span className={styles.categoryIcon}>🛡️</span>
-            <div>
-              <h4>DevOps & Cibersegurança</h4>
-              <span>+480 vagas abertas</span>
+            <div className={styles.categoryIcon}>🛡️</div>
+            <div className={styles.categoryInfo}>
+              <h4 className={styles.categoryTitle}>DevOps & Cibersegurança</h4>
+              <span className={styles.categoryCount}>+480 vagas abertas</span>
             </div>
           </div>
+
           <div className={styles.categoryCard}>
-            <span className={styles.categoryIcon}>🌍</span>
-            <div>
-              <h4>Vagas 100% Remotas</h4>
-              <span>+1.850 vagas abertas</span>
+            <div className={styles.categoryIcon}>🌍</div>
+            <div className={styles.categoryInfo}>
+              <h4 className={styles.categoryTitle}>Vagas 100% Remotas</h4>
+              <span className={styles.categoryCount}>+1.850 vagas abertas</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. Por que escolher o Job Search */}
+      {/* 5. Por que o Job Search */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Por que o Job Search?</h2>
+          <span className={styles.sectionTag}>✦ DIFERENCIAIS</span>
+          <h2 className={styles.sectionTitle}>Por que Escolher o Job Search?</h2>
           <p className={styles.sectionSubtitle}>
-            Criado para quem busca evolução profissional de verdade.
+            Desenvolvido para eliminar processos cansativos e dar visibilidade real às suas candidaturas.
           </p>
         </div>
 
         <div className={styles.benefitsGrid}>
           <div className={styles.benefitCard}>
             <div className={styles.benefitIcon}>⚡</div>
-            <h3>Feedbacks Rápidos</h3>
-            <p>
-              Chega de ficar sem resposta. Acompanhe o status da sua candidatura
-              em tempo real.
+            <h3 className={styles.benefitTitle}>Feedbacks Rápidos</h3>
+            <p className={styles.benefitDescription}>
+              Chega de ficar no escuro. Acompanhe a evolução do status de cada candidatura em tempo real.
             </p>
           </div>
+
           <div className={styles.benefitCard}>
             <div className={styles.benefitIcon}>💸</div>
-            <h3>Salários Transparentes</h3>
-            <p>
-              Vagas com faixas salariais claras desde o início, sem perder tempo
-              em etapas cegas.
+            <h3 className={styles.benefitTitle}>Salários Transparentes</h3>
+            <p className={styles.benefitDescription}>
+              Vagas com faixas salariais claras desde a triagem, poupando seu tempo em entrevistas desajustadas.
             </p>
           </div>
+
           <div className={styles.benefitCard}>
             <div className={styles.benefitIcon}>🔒</div>
-            <h3>Privacidade Total</h3>
-            <p>
-              Escolha se quer manter seu perfil discreto ou invisível para a sua
-              empresa atual.
+            <h3 className={styles.benefitTitle}>Privacidade Total</h3>
+            <p className={styles.benefitDescription}>
+              Você decide a visibilidade do seu perfil perante as empresas com controle absoluto sobre seus dados.
             </p>
           </div>
+
           <div className={styles.benefitCard}>
             <div className={styles.benefitIcon}>🆓</div>
-            <h3>100% Gratuito</h3>
-            <p>
-              Sem taxas escondidas ou planos caros para conseguir entrevistas e
-              vagas.
+            <h3 className={styles.benefitTitle}>100% Gratuito</h3>
+            <p className={styles.benefitDescription}>
+              Sem planos premium, taxas ocultas ou paywalls para ter acesso a oportunidades e entrevistas.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 4. FAQ (Perguntas Frequentes) */}
+      {/* 6. FAQ */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
+          <span className={styles.sectionTag}>✦ DÚVIDAS FREQUENTES</span>
           <h2 className={styles.sectionTitle}>Perguntas Frequentes</h2>
           <p className={styles.sectionSubtitle}>
-            Tudo o que você precisa saber antes de começar.
+            Tudo o que você precisa saber antes de iniciar suas candidaturas.
           </p>
         </div>
 
-        <div className={styles.faqList}>
+        <div className={styles.faqGrid}>
           <div className={styles.faqCard}>
-            <h4>O cadastro é realmente gratuito?</h4>
-            <p>
-              Sim! Para candidatos, o acesso à plataforma, busca de vagas e
-              candidaturas são e sempre serão 100% gratuitos.
+            <h4 className={styles.faqQuestion}>O cadastro é realmente gratuito?</h4>
+            <p className={styles.faqAnswer}>
+              Sim! Para candidatos, o acesso à plataforma, busca de vagas, cálculo de match e candidaturas são e sempre serão 100% gratuitos.
             </p>
           </div>
+
           <div className={styles.faqCard}>
-            <h4>Tem vagas para iniciantes, Júnior ou Estágio?</h4>
-            <p>
-              Com certeza! Temos filtros específicos para quem busca o primeiro
-              emprego, estágio ou posições de nível Júnior.
+            <h4 className={styles.faqQuestion}>Tem vagas para iniciantes, Júnior ou Estágio?</h4>
+            <p className={styles.faqAnswer}>
+              Com certeza! Contamos com filtros específicos para quem busca o primeiro emprego, estágio técnico ou posições de nível Júnior e Trainee.
             </p>
           </div>
+
           <div className={styles.faqCard}>
-            <h4>Como as empresas entram em contato comigo?</h4>
-            <p>
-              Assim que uma empresa gostar do seu perfil, ela enviará uma
-              mensagem direta para seu e-mail e pelo painel da plataforma.
+            <h4 className={styles.faqQuestion}>Como as empresas entram em contato comigo?</h4>
+            <p className={styles.faqAnswer}>
+              Assim que uma empresa demonstrar interesse no seu perfil, ela atualizará o status no painel e enviará convite diretamente ao seu e-mail cadastrado.
             </p>
           </div>
+
           <div className={styles.faqCard}>
-            <h4>Como funciona para vagas internacionais ou remotas?</h4>
-            <p>
-              Você pode filtrar vagas exclusivamente remotas de empresas de
-              qualquer lugar do Brasil e do exterior.
+            <h4 className={styles.faqQuestion}>Como funciona para vagas internacionais e remotas?</h4>
+            <p className={styles.faqAnswer}>
+              Você pode filtrar posições 100% remotas de empresas de tecnologia de todo o Brasil e do exterior sem restrições de localidade.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 5. CTA Final Pré-Rodapé */}
+      {/* 7. CTA Final Boxed */}
       <section className={styles.ctaSection}>
-        {isLoggedIn ? (
-          <>
-            <h2>Continue impulsionando a sua carreira profissional</h2>
-            <p>
-              Novas oportunidades e atualizações de processos seletivos são catalogadas diariamente.
-            </p>
-            <div style={{ display: "flex", gap: "16px", marginTop: "12px", flexWrap: "wrap", justifyContent: "center" }}>
-              <Button
-                target="/home"
-                Text="Ver Vagas"
-                className={styles.ctaButton}
-              />
-              <Link
-                to="/candidaturas"
-                className={styles.secondaryActionBtn}
-                style={{
-                  height: "54px",
-                  borderRadius: "27px",
-                  padding: "0 28px",
-                  fontSize: "17px",
-                  display: "inline-flex",
-                  alignItems: "center"
-                }}
-              >
-                Minhas Candidaturas
-            </Link>
-            <Link to="/perfil" className={styles.headerNavLink}>
-              Meu Perfil
-              </Link>
-            </div>
-          </>
-        ) : (
-          <>
-            <h2>Pronto para dar o próximo passo na sua carreira?</h2>
-            <p>
-              Junte-se a milhares de profissionais e receba propostas das melhores
-              empresas agora mesmo.
-            </p>
-            <Button
-              target="/Register"
-              Text="Começar"
-              className={styles.ctaButton}
-            />
-          </>
-        )}
+        <div className={styles.ctaBox}>
+          <span className={styles.ctaTag}>✦ ACELERE SUA CARREIRA</span>
+
+          {isLoggedIn ? (
+            <>
+              <h2 className={styles.ctaTitle}>Continue impulsionando a sua trajetória profissional</h2>
+              <p className={styles.ctaSubtitle}>
+                Novas oportunidades compatíveis com suas competências técnicas chegam todos os dias.
+              </p>
+              <div className={styles.ctaActions}>
+                <Link to="/home" className={styles.ctaButton}>
+                  Explorar Vagas Agora ➔
+                </Link>
+                <Link to="/candidaturas" className={styles.heroSecondaryBtn}>
+                  Minhas Candidaturas
+                </Link>
+                <Link to="/perfil" className={styles.heroSecondaryBtn}>
+                  Editar Perfil & Skills
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className={styles.ctaTitle}>Pronto para dar o próximo passo na sua carreira?</h2>
+              <p className={styles.ctaSubtitle}>
+                Cadastre-se gratuitamente agora mesmo e receba recomendações assertivas alinhadas às suas ambições.
+              </p>
+              <div className={styles.ctaActions}>
+                <Link to="/Register" className={styles.ctaButton}>
+                  Criar Conta Gratuita ➔
+                </Link>
+                <Link to="/home" className={styles.heroSecondaryBtn}>
+                  Ver Vagas Abertas
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
       </section>
 
-      {/* 6. Rodapé Reutilizável */}
+      {/* 8. Rodapé Reutilizável */}
       <Footer />
 
-      {/* Toast de feedback de ação / logout (Requisito 8 da AV1) */}
+      {/* Toast de feedback */}
       {toastMessage && (
         <div className={styles.toastNotification}>
           <span>{toastMessage}</span>

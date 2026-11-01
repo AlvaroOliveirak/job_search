@@ -1,3 +1,4 @@
+// src/pages/Perfil.tsx
 import { useState, useEffect, useRef, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Logo } from "../components";
@@ -100,43 +101,35 @@ export function Perfil() {
       }
       if (e.key === "Enter") {
         e.preventDefault();
-        if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+        if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
           handleAddSkill(suggestions[highlightedIndex].name);
-        } else if (suggestions[0] && suggestions[0].name.toLowerCase() === newSkill.trim().toLowerCase()) {
-          handleAddSkill(suggestions[0].name);
-        } else {
+        } else if (newSkill.trim()) {
           handleAddSkill(newSkill);
         }
-        setShowDropdown(false);
-        return;
       }
-    }
-
-    if (e.key === "Enter") {
+    } else if (e.key === "Enter" && newSkill.trim()) {
       e.preventDefault();
       handleAddSkill(newSkill);
-      setShowDropdown(false);
     }
   };
 
-  // Carrega o perfil ativo do usuário da API
+  // Carregar dados do perfil ativo
   useEffect(() => {
     let isActive = true;
 
     const fetchProfile = async () => {
-      setLoading(true);
       try {
-        const data = await profileService.getActiveProfile();
-        if (isActive && data) {
-          setProfileName(data.name || "Desenvolvedor Full Stack");
-          setMinScore(data.min_score || 70);
+        const profile = await profileService.getActiveProfile();
+        if (isActive && profile) {
+          setProfileName(profile.name || "Desenvolvedor Full Stack");
+          setMinScore(profile.min_score ?? 70);
 
-          if (data.keywords) {
-            const parsedSkills = data.keywords
+          if (profile.keywords) {
+            const list = profile.keywords
               .split(",")
               .map((s) => s.trim())
-              .filter((s) => s.length > 0);
-            setSkills(parsedSkills);
+              .filter(Boolean);
+            setSkills(list);
           }
         }
       } catch (err) {
@@ -228,7 +221,7 @@ export function Perfil() {
           {isLoggedIn ? (
             <div className={styles.userNavGroup}>
               <span className={styles.userNamePill}>
-                👤 {user?.name || user?.email?.split("@")[0] || "Alvaro Oliver"}
+                {user?.name || user?.email?.split("@")[0] || "Alvaro Oliver"}
               </span>
               <button onClick={handleLogout} className={styles.logoutBtn} title="Encerrar sessão">
                 Sair
@@ -244,46 +237,45 @@ export function Perfil() {
 
       {/* 2. Hero */}
       <section className={styles.hero}>
+        <span className={styles.heroTag}>✦ CALIBRAÇÃO IA</span>
         <h1 className={styles.heroTitle}>Perfil Profissional & Habilidades</h1>
         <p className={styles.heroSubtitle}>
-          Defina suas competências técnicas e linguagens para calibrar o algoritmo de Inteligência
-          Artificial e receber vagas personalizadas diretamente da Gupy.
+          Defina suas competências técnicas para calibrar o algoritmo de compatibilidade e receber as melhores oportunidades.
         </p>
       </section>
 
       {/* 3. Conteúdo Principal */}
       <main>
         {loading ? (
-          <div className={styles.formCard} style={{ alignItems: "center", padding: "60px" }}>
-            <span className={styles.spinIcon} style={{ fontSize: "32px", color: "#38bdf8" }}>
-              🔄
-            </span>
-            <p style={{ marginTop: "12px", color: "rgba(255,255,255,0.7)" }}>
-              Carregando seu perfil técnico...
+          <div className={styles.sectionCard} style={{ alignItems: "center", padding: "60px 20px" }}>
+            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
+              Carregando dados do perfil...
             </p>
           </div>
         ) : (
           <form className={styles.formCard} onSubmit={handleSubmit}>
             {/* Seção 1: Dados do Candidato */}
-            <div className={styles.section}>
+            <div className={styles.sectionCard}>
               <div className={styles.sectionHeader}>
-                <span style={{ fontSize: "20px" }}>👤</span>
-                <h2 className={styles.sectionTitle}>Identificação do Candidato</h2>
+                <h2 className={styles.sectionTitle}>
+                  <span>👤</span>
+                  <span>Identificação Profissional</span>
+                </h2>
+                <p className={styles.sectionSubtitle}>
+                  Informações que identificam seu objetivo no mercado de trabalho.
+                </p>
               </div>
 
               <div className={styles.fieldGroup}>
-                <label className={styles.label}>Nome do Cargo Alvo / Título do Perfil:</label>
+                <label className={styles.label}>Cargo Alvo / Título Profissional:</label>
                 <input
                   type="text"
                   className={styles.input}
-                  placeholder="Ex: Desenvolvedor Front-End React / Full Stack"
+                  placeholder="Ex: Desenvolvedor Front-End / Full Stack"
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
                   required
                 />
-                <span className={styles.hint}>
-                  Utilizado para categorizar suas preferências e alertas de vagas.
-                </span>
               </div>
 
               <div className={styles.fieldGroup}>
@@ -299,17 +291,20 @@ export function Perfil() {
             </div>
 
             {/* Seção 2: Habilidades com Autocomplete estilo LinkedIn */}
-            <div className={styles.section}>
+            <div className={styles.sectionCard}>
               <div className={styles.sectionHeader}>
-                <span style={{ fontSize: "20px" }}>⚡</span>
                 <h2 className={styles.sectionTitle}>
-                  Habilidades & Competências de TI (Foco da IA)
+                  <span>⚡</span>
+                  <span>Habilidades Técnicas & Tecnologias</span>
                 </h2>
+                <p className={styles.sectionSubtitle}>
+                  O motor de IA compara essas competências contra as exigências das vagas abertas.
+                </p>
               </div>
 
               <div className={styles.fieldGroup}>
                 <label className={styles.label}>
-                  Adicionar Tecnologias (digite para buscar no catálogo):
+                  Adicionar Nova Tecnologia:
                 </label>
 
                 <div className={styles.skillsInputRow}>
@@ -317,7 +312,7 @@ export function Perfil() {
                     <input
                       type="text"
                       className={styles.input}
-                      placeholder="Ex: React, TypeScript, Spring Boot, Docker, Python..."
+                      placeholder="Digite para buscar tecnologia (ex: React, Java, Docker, AWS)..."
                       value={newSkill}
                       onChange={(e) => handleSkillInputChange(e.target.value)}
                       onKeyDown={handleKeyDown}
@@ -328,7 +323,7 @@ export function Perfil() {
                       }}
                     />
 
-                    {/* Dropdown de Autocomplete Estilo LinkedIn */}
+                    {/* Dropdown de Autocomplete */}
                     {showDropdown && suggestions.length > 0 && (
                       <ul className={styles.suggestionsDropdown}>
                         {suggestions.map((item, idx) => (
@@ -347,7 +342,7 @@ export function Perfil() {
                           </li>
                         ))}
                         <li className={styles.dropdownFooter}>
-                          <span>💡 Pressione Enter para adicionar</span>
+                          <span>Pressione Enter para adicionar</span>
                           <span>{suggestions.length} sugestões</span>
                         </li>
                       </ul>
@@ -359,41 +354,41 @@ export function Perfil() {
                     className={styles.addSkillBtn}
                     onClick={() => handleAddSkill(newSkill)}
                   >
-                    + Adicionar
+                    Adicionar
                   </button>
                 </div>
-                <span className={styles.hint}>
-                  O algoritmo de IA compara essas tecnologias com os requisitos das vagas para calcular a aderência.
-                </span>
               </div>
 
               {/* Tags Ativas */}
-              <div className={styles.tagsContainer}>
-                {skills.length === 0 ? (
-                  <span className={styles.emptyTagsText}>
-                    Nenhuma habilidade cadastrada ainda. Digite acima ou selecione as sugestões rápidas abaixo.
-                  </span>
-                ) : (
-                  skills.map((skill) => (
-                    <span key={skill} className={styles.skillChip}>
-                      <span>{skill}</span>
-                      <button
-                        type="button"
-                        className={styles.removeChipBtn}
-                        onClick={() => handleRemoveSkill(skill)}
-                        title={`Remover ${skill}`}
-                        aria-label={`Remover habilidade ${skill}`}
-                      >
-                        ✕
-                      </button>
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Habilidades Cadastradas ({skills.length}):</label>
+                <div className={styles.tagsContainer}>
+                  {skills.length === 0 ? (
+                    <span className={styles.emptyTagsText}>
+                      Nenhuma habilidade cadastrada ainda. Adicione as tecnologias que domina.
                     </span>
-                  ))
-                )}
+                  ) : (
+                    skills.map((skill) => (
+                      <span key={skill} className={styles.skillChip}>
+                        <span>{skill}</span>
+                        <button
+                          type="button"
+                          className={styles.removeChipBtn}
+                          onClick={() => handleRemoveSkill(skill)}
+                          title={`Remover ${skill}`}
+                          aria-label={`Remover habilidade ${skill}`}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))
+                  )}
+                </div>
               </div>
 
               {/* Sugestões Rápidas */}
               <div className={styles.suggestionsBox}>
-                <span className={styles.suggestionsTitle}>💡 Sugestões Rápidas de Tecnologia:</span>
+                <span className={styles.suggestionsTitle}>Sugestões Frequentes no Mercado:</span>
                 <div className={styles.suggestionsList}>
                   {POPULAR_SKILLS.map((popSkill) => {
                     const isAdded = skills.some(
@@ -406,7 +401,7 @@ export function Perfil() {
                         className={styles.suggestionBadge}
                         style={
                           isAdded
-                            ? { opacity: 0.4, cursor: "not-allowed", textDecoration: "line-through" }
+                            ? { opacity: 0.35, cursor: "not-allowed", textDecoration: "line-through" }
                             : {}
                         }
                         onClick={() => !isAdded && handleAddSkill(popSkill)}
@@ -420,16 +415,21 @@ export function Perfil() {
               </div>
             </div>
 
-            {/* Seção 3: Parâmetros de Matching e Alertas */}
-            <div className={styles.section}>
+            {/* Seção 3: Parâmetros de Matching e Notificações */}
+            <div className={styles.sectionCard}>
               <div className={styles.sectionHeader}>
-                <span style={{ fontSize: "20px" }}>🎯</span>
-                <h2 className={styles.sectionTitle}>Preferências de Notificação e Compatibilidade</h2>
+                <h2 className={styles.sectionTitle}>
+                  <span>🎯</span>
+                  <span>Critérios de Correspondência & Alertas</span>
+                </h2>
+                <p className={styles.sectionSubtitle}>
+                  Configure o nível de rigor do algoritmo de match para notificações e filtros.
+                </p>
               </div>
 
               <div className={styles.fieldGroup}>
                 <label className={styles.label}>
-                  Nota Mínima de Compatibilidade para Alertas:
+                  Nota Mínima de Match Desejada:
                 </label>
                 <div className={styles.scoreRangeWrapper}>
                   <input
@@ -445,14 +445,11 @@ export function Perfil() {
                     {minScore}%
                   </span>
                 </div>
-                <span className={styles.hint}>
-                  Avisar e priorizar vagas que apresentarem aderência igual ou superior a {minScore}%.
-                </span>
               </div>
 
               <div className={styles.fieldGroup}>
                 <label className={styles.label}>
-                  Telegram Chat ID para Alertas Imediatos:
+                  Telegram Chat ID para Notificações Instantâneas:
                 </label>
                 <input
                   type="text"
@@ -461,33 +458,20 @@ export function Perfil() {
                   value={telegramChatId}
                   onChange={(e) => setTelegramChatId(e.target.value)}
                 />
-                <span className={styles.hint}>
-                  O robô de IA enviará mensagens instantâneas no seu Telegram ao encontrar vagas com alto match.
-                </span>
               </div>
             </div>
 
             {/* Botões de Ação */}
             <div className={styles.formActions}>
               <Link to="/home" className={styles.viewJobsBtn}>
-                🔍 Ver Minhas Vagas
+                Ver Vagas Recomendadas
               </Link>
               <button
                 type="submit"
                 className={styles.saveBtn}
                 disabled={saving}
               >
-                {saving ? (
-                  <>
-                    <span className={styles.spinIcon}>🔄</span>
-                    <span>Salvando e recalculando...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>💾</span>
-                    <span>Salvar Perfil e Atualizar Vagas</span>
-                  </>
-                )}
+                {saving ? "Salvando Perfil..." : "Salvar & Recalcular Match"}
               </button>
             </div>
           </form>

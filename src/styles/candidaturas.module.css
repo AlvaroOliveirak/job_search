@@ -1,30 +1,27 @@
 /* src/styles/candidaturas.module.css */
 .container {
   min-height: 100vh;
-  padding: 24px;
-  max-width: 1200px;
+  padding: 0 24px 80px 24px;
+  max-width: var(--max-width);
   margin: 0 auto;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #ffffff;
+  box-sizing: border-box;
 }
 
-/* 1. Navbar */
+/* 1. Navbar Padronizada */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  background: rgba(18, 24, 46, 0.85);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  border-radius: 12px;
-  margin-bottom: 30px;
-  backdrop-filter: blur(10px);
+  height: 64px;
+  padding: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 40px;
 }
 
 .brand {
-  font-size: 24px;
-  font-weight: 700;
-  color: #38bdf8;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -33,163 +30,230 @@
 
 .navLinks {
   display: flex;
-  gap: 16px;
+  gap: 24px;
   align-items: center;
 }
 
 .navLink {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  transition: color 0.2s;
+  transition: color 0.15s ease;
 }
 
 .navLink:hover {
-  color: #38bdf8;
+  color: var(--text-primary);
 }
 
 .activeLink {
-  color: #38bdf8 !important;
+  color: var(--text-primary) !important;
   font-weight: 600;
+}
+
+.userNavGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 8px;
+}
+
+.userNamePill {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+}
+
+.logoutBtn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.logoutBtn:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
 }
 
 /* 2. Hero Section */
 .hero {
-  margin-bottom: 28px;
+  margin-bottom: 32px;
+}
+
+.heroTag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--accent-blue);
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 10px;
 }
 
 .heroTitle {
-  font-size: 32px;
-  font-weight: 800;
-  color: #f8fafc;
-  margin-bottom: 8px;
-  letter-spacing: -0.5px;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 
 .heroSubtitle {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.65);
-  max-width: 650px;
+  font-size: 15px;
+  color: var(--text-secondary);
+  max-width: 620px;
   line-height: 1.5;
+  margin: 0;
 }
 
 /* 3. Métricas e KPIs */
 .kpiGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
 }
 
 .kpiCard {
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  border-radius: 12px;
-  padding: 18px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  backdrop-filter: blur(8px);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .kpiCard:hover {
-  transform: translateY(-2px);
-  border-color: rgba(56, 189, 248, 0.45);
+  border-color: var(--border-hover);
+  background: var(--bg-surface-hover);
 }
 
 .kpiLabel {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .kpiValue {
   font-size: 28px;
-  font-weight: 800;
-  color: #f8fafc;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 
 .kpiHighlight {
-  color: #38bdf8;
+  color: var(--accent-blue);
 }
 
 .kpiSuccess {
-  color: #4ade80;
+  color: var(--status-success);
 }
 
-/* 4. Barra de Filtros / Tabs */
-.tabsBar {
+/* 4. Abas de Filtro Segmentadas */
+.tabsContainer {
   display: flex;
-  gap: 10px;
-  margin-bottom: 24px;
+  justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 12px;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.tabsBar {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
 }
 
 .tabBtn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.75);
-  padding: 8px 18px;
-  border-radius: 20px;
-  font-size: 14px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 7px 16px;
+  border-radius: var(--radius-xs);
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .tabBtn:hover {
-  background: rgba(56, 189, 248, 0.12);
-  color: #e0f2fe;
-  border-color: rgba(56, 189, 248, 0.35);
+  color: var(--text-primary);
 }
 
 .tabBtnActive {
-  background: linear-gradient(135deg, #0284c7, #38bdf8);
-  color: #0f172a;
-  border-color: #38bdf8;
-  font-weight: 700;
-  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+  background: rgba(99, 102, 241, 0.2);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.resultInfo {
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 /* 5. Grid de Candidaturas */
 .applicationsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 20px;
 }
 
 .appCard {
-  background: rgba(18, 24, 46, 0.85);
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  border-radius: 12px;
-  padding: 22px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 22px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 18px;
-  backdrop-filter: blur(8px);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  height: 100%;
 }
 
 .appCard:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  border-color: rgba(56, 189, 248, 0.45);
+  background: var(--bg-surface-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+}
+
+.cardTopArea {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .appHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
 .badgesGroup {
@@ -199,95 +263,115 @@
 }
 
 .scoreBadge {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
-  background: rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+}
+
+.sourceBadge {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 .statusBadge {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.02em;
 }
 
 .statusApplied {
-  background: rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.4);
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
 }
 
 .statusInterview {
-  background: rgba(74, 222, 128, 0.15);
-  color: #4ade80;
-  border: 1px solid rgba(74, 222, 128, 0.4);
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #86efac;
 }
 
 .statusViewed {
-  background: rgba(250, 204, 21, 0.15);
-  color: #facc15;
-  border: 1px solid rgba(250, 204, 21, 0.4);
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  color: #fde047;
 }
 
 .statusDiscarded {
-  background: rgba(148, 163, 184, 0.15);
-  color: #94a3b8;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
 }
 
 .appBody {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  flex-grow: 1;
 }
 
 .appTitle {
-  font-size: 18px;
-  font-weight: 700;
-  color: #f8fafc;
-  line-height: 1.3;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  margin: 0;
 }
 
 .appCompany {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .appLocation {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cardBottomArea {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 14px;
 }
 
 .statusControlRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  background: rgba(10, 15, 30, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .statusSelect {
-  background: rgba(15, 23, 42, 0.9);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 13px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
   outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.statusSelect:focus {
+  border-color: var(--border-focus);
 }
 
 .appActions {
@@ -297,162 +381,125 @@
 
 .detailsBtn {
   flex: 1;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  color: #38bdf8;
-  padding: 9px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
+  height: 36px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .detailsBtn:hover {
-  background: rgba(56, 189, 248, 0.22);
-  border-color: #38bdf8;
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
 }
 
 .externalLinkBtn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.75);
-  padding: 9px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  flex: 1;
+  height: 36px;
+  background: var(--accent-primary);
+  color: #ffffff;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
   text-decoration: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .externalLinkBtn:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--accent-primary-hover);
+  transform: translateY(-1px);
 }
 
 /* 6. Empty State */
 .emptyState {
-  background: rgba(18, 24, 46, 0.6);
-  border: 1px dashed rgba(56, 189, 248, 0.3);
-  border-radius: 14px;
-  padding: 50px 24px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 64px 24px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  margin-top: 20px;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 .emptyIcon {
-  font-size: 48px;
-  margin-bottom: 4px;
+  font-size: 36px;
 }
 
 .emptyTitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: #f8fafc;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .emptyText {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.65);
+  font-size: 14px;
+  color: var(--text-secondary);
   max-width: 480px;
   line-height: 1.5;
+  margin: 0;
 }
 
 .emptyCta {
-  background: linear-gradient(135deg, #0284c7, #38bdf8);
-  color: #0f172a;
-  padding: 10px 24px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 15px;
   margin-top: 8px;
-  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.4);
-  transition: all 0.25s ease;
+  background: var(--accent-primary);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s ease;
 }
 
 .emptyCta:hover {
-  background: linear-gradient(135deg, #38bdf8, #7dd3fc);
-  transform: translateY(-2px);
+  background: var(--accent-primary-hover);
+  transform: translateY(-1px);
 }
 
-/* Toast de resultado de ação (Requisito 8 da AV1) */
+/* Toast */
 .toastNotification {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: linear-gradient(135deg, rgba(8, 25, 55, 0.95), rgba(15, 30, 65, 0.95));
-  border: 1px solid #38bdf8;
-  color: #f0f9ff;
-  padding: 12px 20px;
-  border-radius: 8px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-  font-size: 14px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  z-index: 1000;
-  animation: slideInToast 0.3s ease-out;
-}
-
-@keyframes slideInToast {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* Grupo de Usuário e Logout na Navbar */
-.userNavGroup {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: 8px;
-}
-
-.userNamePill {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hover);
+  color: var(--text-primary);
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
-  font-family: monospace;
-  background: rgba(255, 255, 255, 0.06);
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.logoutBtn {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #fca5a5;
-  padding: 5px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-family: inherit;
   font-weight: 500;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
 }
 
-.logoutBtn:hover {
-  background: rgba(239, 68, 68, 0.3);
-  border-color: rgba(239, 68, 68, 0.6);
-  color: #ffffff;
-  transform: translateY(-1px);
+@media (max-width: 900px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
+@media (max-width: 600px) {
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
+  .applicationsGrid {
+    grid-template-columns: 1fr;
+  }
+}

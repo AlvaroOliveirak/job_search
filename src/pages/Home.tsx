@@ -181,7 +181,7 @@ export function Home() {
           {isLoggedIn ? (
             <div className={styles.userNavGroup}>
               <span className={styles.userNamePill}>
-                👤 {user?.name || user?.email?.split("@")[0] || "Alvaro Oliver"}
+                {user?.name || user?.email?.split("@")[0] || "Alvaro Oliver"}
               </span>
               <button
                 onClick={handleLogout}
@@ -203,10 +203,10 @@ export function Home() {
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <div>
-            <span className={styles.heroTag}>Oportunidades em Tecnologia</span>
+            <span className={styles.heroTag}>Tecnologia</span>
             <h1 className={styles.heroTitle}>Oportunidades Recomendadas</h1>
             <p className={styles.heroSubtitle}>
-              Vagas selecionadas por IA e coletadas diretamente da API oficial da Gupy de acordo com seu perfil.
+              Vagas selecionadas por IA e coletadas ao vivo da API da Gupy com base no seu perfil.
             </p>
           </div>
 
@@ -215,18 +215,15 @@ export function Home() {
               className={styles.refreshButton}
               onClick={handleManualRefresh}
               disabled={isRefreshing}
-              title="Buscar novas vagas ao vivo na API da Gupy e recalcular compatibilidade com IA"
+              title="Buscar novas vagas ao vivo na API da Gupy"
             >
               {isRefreshing ? (
                 <>
-                  <span className={styles.spinIcon}>🔄</span>
-                  <span>Varrendo Gupy & IA...</span>
+                  <span className={styles.spinIcon}>•</span>
+                  <span>Sincronizando...</span>
                 </>
               ) : (
-                <>
-                  <span>🚀</span>
-                  <span>Buscar Vagas Manualmente</span>
-                </>
+                <span>Atualizar Vagas</span>
               )}
             </button>
           </div>
@@ -237,7 +234,7 @@ export function Home() {
           <div className={styles.statusIndicator}>
             <span className={styles.statusDot}></span>
             <span>
-              Fonte: <strong>Gupy Live API</strong> (Dedup SHA-256 + NLP Matcher)
+              Fonte: <strong>Gupy API</strong> (Dedup SHA-256 + NLP)
             </span>
           </div>
 
@@ -246,52 +243,72 @@ export function Home() {
               className={styles.statusMetaItem}
               title={
                 lastUpdated
-                  ? `Sincronização completa em: ${formatFullDateTime(lastUpdated)}`
+                  ? `Sincronização em: ${formatFullDateTime(lastUpdated)}`
                   : "Aguardando sincronização"
               }
             >
-              🕒 Última varredura: <strong>{formatRelativeTime(lastUpdated)}</strong>
+              Última varredura: <strong>{formatRelativeTime(lastUpdated)}</strong>
             </span>
             <span className={styles.statusMetaItem}>
-              📊 <strong>{matches.length}</strong> vagas disponíveis
+              <strong>{matches.length}</strong> vagas disponíveis
             </span>
           </div>
         </div>
       </section>
 
-      {/* 3. Filtros e Busca */}
-      <section className={styles.filtersBar}>
-        <div className={styles.searchInputWrapper}>
-          <span className={styles.searchIcon}>🔍</span>
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Buscar por cargo, tecnologia (ex: React, Java, Docker) ou empresa..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {/* 3. Toolbar de Filtros e Busca */}
+      <section className={styles.filtersSection}>
+        <div className={styles.filtersBar}>
+          <div className={styles.searchInputWrapper}>
+            <span className={styles.searchIcon}>⌕</span>
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder="Filtrar por cargo, stack ou empresa..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div className={styles.filterControls}>
+            <select
+              className={styles.selectInput}
+              value={minScore}
+              onChange={(e) => setMinScore(Number(e.target.value))}
+            >
+              <option value={0}>Qualquer Match</option>
+              <option value={70}>Match ≥ 70%</option>
+              <option value={80}>Match ≥ 80%</option>
+              <option value={90}>Match ≥ 90%</option>
+            </select>
+
+            <button
+              className={`${styles.favToggleBtn} ${
+                onlyFavorites ? styles.favToggleActive : ""
+              }`}
+              onClick={() => setOnlyFavorites(!onlyFavorites)}
+            >
+              {onlyFavorites ? "★ Apenas Favoritas" : "☆ Todas as Vagas"}
+            </button>
+          </div>
         </div>
 
-        <div className={styles.filterControls}>
-          <select
-            className={styles.selectInput}
-            value={minScore}
-            onChange={(e) => setMinScore(Number(e.target.value))}
-          >
-            <option value={0}>Qualquer Aderência</option>
-            <option value={70}>Match ≥ 70%</option>
-            <option value={80}>Match ≥ 80%</option>
-            <option value={90}>Match Alto (≥ 90%)</option>
-          </select>
-
-          <button
-            className={`${styles.favToggleBtn} ${
-              onlyFavorites ? styles.favToggleActive : ""
-            }`}
-            onClick={() => setOnlyFavorites(!onlyFavorites)}
-          >
-            {onlyFavorites ? "♥ Apenas Favoritas" : "♡ Todas as Vagas"}
-          </button>
+        <div className={styles.toolbarMetaRow}>
+          <span>
+            Exibindo <strong>{filteredMatches.length}</strong> de <strong>{matches.length}</strong> vagas disponíveis
+          </span>
+          {(searchTerm || onlyFavorites || minScore > 0) && (
+            <button
+              className={styles.clearFiltersBtn}
+              onClick={() => {
+                setSearchTerm("");
+                setOnlyFavorites(false);
+                setMinScore(0);
+              }}
+            >
+              Limpar filtros aplicados
+            </button>
+          )}
         </div>
       </section>
 

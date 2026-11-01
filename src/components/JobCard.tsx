@@ -27,12 +27,12 @@ export const JobCard: React.FC<JobCardProps> = ({
       <div className={styles.header}>
         <div className={styles.badgesContainer}>
           <span className={getScoreBadgeClass(score)}>
-            ★ {score}% Match
+            {score}% match
           </span>
           <span className={styles.sourceBadge}>{job.source}</span>
           {isRecentJob(job.posted_at || job.created_at) && (
-            <span className={styles.recentBadge} title="Vaga publicada recentemente">
-              ⚡ Recente
+            <span className={styles.recentBadge} title="Publicada recentemente">
+              Nova
             </span>
           )}
         </div>
@@ -43,50 +43,47 @@ export const JobCard: React.FC<JobCardProps> = ({
           title={is_favorite ? "Remover dos favoritos" : "Salvar como favorita"}
           aria-label="Favoritar vaga"
         >
-          {is_favorite ? "♥" : "♡"}
+          {is_favorite ? "★" : "☆"}
         </button>
       </div>
 
-      <div>
-        <h3 className={styles.title}>{job.title}</h3>
+      <div className={styles.contentArea}>
+        <h3 className={styles.title} title={job.title}>{job.title}</h3>
         <div className={styles.companyRow}>
-          <span>🏢 {job.company}</span>
+          <span>{job.company}</span>
+          {job.location && (
+            <>
+              <span style={{ opacity: 0.3 }}>•</span>
+              <span className={styles.location}>{job.location}</span>
+            </>
+          )}
         </div>
       </div>
 
-      <div className={styles.location}>
-        <span>📍 {job.location || "Local não informado"}</span>
-      </div>
+      <div className={styles.cardFooter}>
+        <div className={styles.dateRow}>
+          <span className={styles.postedDate}>
+            {formatRelativeTime(job.posted_at || job.created_at)}
+          </span>
+        </div>
 
-      <div className={styles.dateRow}>
-        <span
-          className={styles.postedDate}
-          title={
-            job.posted_at
-              ? `Data original de publicação: ${new Date(job.posted_at).toLocaleString("pt-BR")}`
-              : "Data recente"
-          }
-        >
-          🕒 {formatRelativeTime(job.posted_at || job.created_at)}
-        </span>
-      </div>
+        <div className={styles.actions}>
+          <button
+            className={styles.detailsBtn}
+            onClick={() => onViewDetails(match)}
+          >
+            Detalhes
+          </button>
 
-      <div className={styles.actions}>
-        <button
-          className={styles.detailsBtn}
-          onClick={() => onViewDetails(match)}
-        >
-          Ver Detalhes
-        </button>
-
-        <a
-          href={job.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.linkBtn}
-        >
-          Candidatar-se ↗
-        </a>
+          <a
+            href={job.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.linkBtn}
+          >
+            Candidatar-se ↗
+          </a>
+        </div>
       </div>
     </article>
   );

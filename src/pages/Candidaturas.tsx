@@ -104,14 +104,14 @@ export function Candidaturas() {
   const getStatusBadge = (status: MatchStatus) => {
     switch (status) {
       case "interview":
-        return <span className={`${styles.statusBadge} ${styles.statusInterview}`}>🎯 Entrevista Realizada</span>;
+        return <span className={`${styles.statusBadge} ${styles.statusInterview}`}>Entrevista Agendada</span>;
       case "applied":
-        return <span className={`${styles.statusBadge} ${styles.statusApplied}`}>📨 Candidatura Enviada</span>;
+        return <span className={`${styles.statusBadge} ${styles.statusApplied}`}>Candidatura Enviada</span>;
       case "viewed":
-        return <span className={`${styles.statusBadge} ${styles.statusViewed}`}>👀 Visualizada</span>;
+        return <span className={`${styles.statusBadge} ${styles.statusViewed}`}>Visualizada</span>;
       case "discarded":
       case "rejected":
-        return <span className={`${styles.statusBadge} ${styles.statusDiscarded}`}>✕ Descartada</span>;
+        return <span className={`${styles.statusBadge} ${styles.statusDiscarded}`}>Descartada</span>;
       default:
         return <span className={styles.statusBadge}>Pendente</span>;
     }
@@ -136,12 +136,12 @@ export function Candidaturas() {
             Minhas Candidaturas
           </Link>
           <Link to="/perfil" className={styles.navLink}>
-            Perfil
+            Meu Perfil
           </Link>
           {isLoggedIn && (
             <div className={styles.userNavGroup}>
               <span className={styles.userNamePill}>
-                👤 {user?.name || "Candidato"}
+                {user?.name || "Candidato"}
               </span>
               <button
                 type="button"
@@ -149,7 +149,7 @@ export function Candidaturas() {
                 className={styles.logoutBtn}
                 title="Encerrar sessão e voltar ao início"
               >
-                🚪 Sair
+                Sair
               </button>
             </div>
           )}
@@ -158,6 +158,7 @@ export function Candidaturas() {
 
       {/* 2. Hero */}
       <section className={styles.hero}>
+        <span className={styles.heroTag}>✦ GESTÃO DE PROCESSOS</span>
         <h1 className={styles.heroTitle}>Minhas Candidaturas</h1>
         <p className={styles.heroSubtitle}>
           Gerencie e acompanhe a evolução de todos os seus processos seletivos em tempo real com transparência total.
@@ -167,55 +168,61 @@ export function Candidaturas() {
       {/* 3. Painel de KPIs */}
       <section className={styles.kpiGrid}>
         <div className={styles.kpiCard}>
-          <span className={styles.kpiLabel}>📋 Total de Candidaturas</span>
+          <span className={styles.kpiLabel}>Total de Candidaturas</span>
           <span className={styles.kpiValue}>{totalApplied}</span>
         </div>
         <div className={styles.kpiCard}>
-          <span className={styles.kpiLabel}>⏳ Em Análise / Enviadas</span>
+          <span className={styles.kpiLabel}>Em Análise / Enviadas</span>
           <span className={`${styles.kpiValue} ${styles.kpiHighlight}`}>{inAnalysis}</span>
         </div>
         <div className={styles.kpiCard}>
-          <span className={styles.kpiLabel}>🎉 Entrevistas Agendadas</span>
+          <span className={styles.kpiLabel}>Entrevistas Agendadas</span>
           <span className={`${styles.kpiValue} ${styles.kpiSuccess}`}>{inInterview}</span>
         </div>
         <div className={styles.kpiCard}>
-          <span className={styles.kpiLabel}>★ Média de Match IA</span>
+          <span className={styles.kpiLabel}>Média de Match IA</span>
           <span className={styles.kpiValue}>{avgScore > 0 ? `${avgScore}%` : "--"}</span>
         </div>
       </section>
 
-      {/* 4. Abas de Filtro */}
-      <section className={styles.tabsBar}>
-        <button
-          className={`${styles.tabBtn} ${activeTab === "all" ? styles.tabBtnActive : ""}`}
-          onClick={() => setActiveTab("all")}
-        >
-          Todas ({candidateJobs.length})
-        </button>
-        <button
-          className={`${styles.tabBtn} ${activeTab === "applied" ? styles.tabBtnActive : ""}`}
-          onClick={() => setActiveTab("applied")}
-        >
-          Enviadas ({inAnalysis})
-        </button>
-        <button
-          className={`${styles.tabBtn} ${activeTab === "interview" ? styles.tabBtnActive : ""}`}
-          onClick={() => setActiveTab("interview")}
-        >
-          Entrevistas ({inInterview})
-        </button>
-        <button
-          className={`${styles.tabBtn} ${activeTab === "discarded" ? styles.tabBtnActive : ""}`}
-          onClick={() => setActiveTab("discarded")}
-        >
-          Descartadas ({candidateJobs.filter((m) => m.status === "discarded" || m.status === "rejected").length})
-        </button>
+      {/* 4. Abas de Filtro Segmentadas */}
+      <section className={styles.tabsContainer}>
+        <div className={styles.tabsBar}>
+          <button
+            className={`${styles.tabBtn} ${activeTab === "all" ? styles.tabBtnActive : ""}`}
+            onClick={() => setActiveTab("all")}
+          >
+            Todas ({candidateJobs.length})
+          </button>
+          <button
+            className={`${styles.tabBtn} ${activeTab === "applied" ? styles.tabBtnActive : ""}`}
+            onClick={() => setActiveTab("applied")}
+          >
+            Enviadas ({inAnalysis})
+          </button>
+          <button
+            className={`${styles.tabBtn} ${activeTab === "interview" ? styles.tabBtnActive : ""}`}
+            onClick={() => setActiveTab("interview")}
+          >
+            Entrevistas ({inInterview})
+          </button>
+          <button
+            className={`${styles.tabBtn} ${activeTab === "discarded" ? styles.tabBtnActive : ""}`}
+            onClick={() => setActiveTab("discarded")}
+          >
+            Descartadas ({candidateJobs.filter((m) => m.status === "discarded" || m.status === "rejected").length})
+          </button>
+        </div>
+
+        <span className={styles.resultInfo}>
+          Exibindo <strong>{filteredJobs.length}</strong> de <strong>{candidateJobs.length}</strong> processos
+        </span>
       </section>
 
       {/* 5. Listagem de Candidaturas ou Empty State */}
       <main>
         {loading ? (
-          <div style={{ textAlign: "center", padding: "40px", color: "rgba(255,255,255,0.7)" }}>
+          <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text-muted)" }}>
             Carregando suas candidaturas...
           </div>
         ) : filteredJobs.length === 0 ? (
@@ -233,32 +240,30 @@ export function Candidaturas() {
           <div className={styles.applicationsGrid}>
             {filteredJobs.map((match) => (
               <article key={match.id} className={styles.appCard}>
-                <div>
+                <div className={styles.cardTopArea}>
                   <div className={styles.appHeader}>
                     <div className={styles.badgesGroup}>
                       <span className={styles.scoreBadge}>★ {match.score}% Match</span>
-                      <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)" }}>
-                        {match.job.source}
-                      </span>
+                      <span className={styles.sourceBadge}>{match.job.source}</span>
                     </div>
                     {getStatusBadge(match.status)}
                   </div>
 
-                  <div className={styles.appBody} style={{ marginTop: "14px" }}>
+                  <div className={styles.appBody}>
                     <h3 className={styles.appTitle}>{match.job.title}</h3>
                     <div className={styles.appCompany}>
-                      <span>🏢 {match.job.company}</span>
+                      🏢 {match.job.company}
                     </div>
                     <div className={styles.appLocation}>
-                      <span>📍 {match.job.location || "Remoto / Não informado"}</span>
+                      📍 {match.job.location || "Remoto / Não informado"}
                     </div>
                   </div>
                 </div>
 
-                <div>
+                <div className={styles.cardBottomArea}>
                   {/* Seletor de Status em Tempo Real */}
                   <div className={styles.statusControlRow}>
-                    <span>Atualizar Etapa:</span>
+                    <span>Etapa Atual:</span>
                     <select
                       className={styles.statusSelect}
                       value={match.status}
@@ -266,14 +271,14 @@ export function Candidaturas() {
                         handleUpdateStatus(match.id, e.target.value as MatchStatus)
                       }
                     >
-                      <option value="applied">Candidatado</option>
-                      <option value="interview">Entrevista</option>
+                      <option value="applied">Candidatura Enviada</option>
+                      <option value="interview">Entrevista Agendada</option>
                       <option value="discarded">Descartada</option>
-                      <option value="new">Voltar para Vagas</option>
+                      <option value="new">Mover para Novas</option>
                     </select>
                   </div>
 
-                  <div className={styles.appActions} style={{ marginTop: "12px" }}>
+                  <div className={styles.appActions}>
                     <button
                       className={styles.detailsBtn}
                       onClick={() => setSelectedMatch(match)}
@@ -303,7 +308,7 @@ export function Candidaturas() {
         onUpdateStatus={handleUpdateStatus}
       />
 
-      {/* Toast de feedback de ação (Requisito 8 da AV1) */}
+      {/* Toast de feedback de ação */}
       {toastMessage && (
         <div className={styles.toastNotification}>
           <span>{toastMessage}</span>

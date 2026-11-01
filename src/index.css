@@ -1,13 +1,95 @@
 /* src/index.css */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  /* Tipografia Limpa */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  /* Paleta Confortável e Aveludada (Slate / Dark Navy Suave) */
+  --bg-main: #0d121f;              /* Fundo principal aveludado, nunca preto puro */
+  --bg-surface: #141b2d;           /* Cartões e superfícies */
+  --bg-surface-hover: #192238;     /* Hover suave */
+  --bg-surface-elevated: #1e293b;  /* Modais e popups */
+  --bg-input: #0b0f1a;             /* Fundo de campos de digitação */
+  
+  /* Bordas Finas e Harmônicas */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.16);
+  --border-focus: #6366f1;
+  
+  /* Hierarquia Tipográfica Suave */
+  --text-primary: #f1f5f9;         /* Slate 100 - branco suave que não agride */
+  --text-secondary: #94a3b8;       /* Slate 400 - cinza neutro perfeitamente legível */
+  --text-muted: #64748b;           /* Slate 500 */
+  
+  /* Acentos Elegantes */
+  --accent-primary: #4f46e5;       /* Indigo corporativo moderno */
+  --accent-primary-hover: #4338ca;
+  --accent-blue: #3b82f6;
+  
+  /* Status Semafóricos */
+  --status-success: #10b981;
+  --status-success-bg: rgba(16, 185, 129, 0.1);
+  --status-warning: #f59e0b;
+  --status-warning-bg: rgba(245, 158, 11, 0.1);
+  --status-danger: #ef4444;
+  --status-danger-bg: rgba(239, 68, 68, 0.1);
+
+  /* Dimensões & Grade Padronizada */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 9999px;
+  
+  --max-width: 1140px;
+  --control-height: 40px;          /* Altura idêntica para todos os inputs e botões */
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html {
+  color-scheme: dark;
+}
+
 body {
   min-height: 100vh;
   overflow-x: hidden;
-  background-color: rgb(29, 31, 39);
+  font-family: var(--font-sans);
+  background-color: var(--bg-main);
+  background-image: 
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(99, 102, 241, 0.08), transparent),
+    radial-gradient(ellipse 40% 30% at 90% 100%, rgba(59, 130, 246, 0.04), transparent);
   background-attachment: fixed;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* Scrollbar Discreta */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: #ffffff;
 }
