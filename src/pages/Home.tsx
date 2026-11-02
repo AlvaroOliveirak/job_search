@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { UserJobMatch, MatchStatus } from "../types/job";
 import { jobStorageService } from "../services/jobStorage";
+import { profileService } from "../services/profileService";
 import { JobCard, JobModal, Logo } from "../components";
 import styles from "../styles/home.module.css";
 import { useAuth } from "../hooks/useAuth";
@@ -21,10 +22,11 @@ export function Home() {
     navigate("/");
   };
 
-  // Estados dos Filtros
+  // Estados dos Filtros (Inicializa o minScore com base no perfil do candidato)
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [onlyFavorites, setOnlyFavorites] = useState<boolean>(false);
-  const [minScore, setMinScore] = useState<number>(0);
+  const [profileMinScore, setProfileMinScore] = useState<number>(70);
+  const [minScore, setMinScore] = useState<number>(70);
 
   // Estado do Modal de Detalhes
   const [selectedMatch, setSelectedMatch] = useState<UserJobMatch | null>(null);
@@ -39,11 +41,15 @@ export function Home() {
     }, 3200);
   };
 
-  // Carrega as vagas usando a camada de serviço (Repository)
+  // Carrega as vagas usando a camada de serviço (Repository) e perfil ativo
   const loadJobs = async () => {
     setLoading(true);
     setError(null);
     try {
+      const profile = await profileService.getActiveProfile();
+      if (profile && typeof profile.min_score === "number") {
+        setProfileMinScore(profile.min_score);
+      }
       const data = await jobStorageService.fetchJobs();
       setMatches(data);
       setLastUpdated(jobStorageService.getLastUpdated());
@@ -74,11 +80,20 @@ export function Home() {
   useEffect(() => {
     let isActive = true;
 
-    const fetchJobs = async () => {
+    const initPage = async () => {
       setLoading(true);
       setError(null);
 
       try {
+        // 1. Carrega o perfil do usuário para aplicar a nota mínima configurada pelo candidato
+        const profile = await profileService.getActiveProfile();
+        const preferredMin = profile?.min_score ?? 70;
+        if (isActive) {
+          setProfileMinScore(preferredMin);
+          setMinScore(preferredMin);
+        }
+
+        // 2. Carrega as vagas do repositório
         const data = await jobStorageService.fetchJobs();
         if (isActive) {
           setMatches(data);
@@ -96,7 +111,7 @@ export function Home() {
       }
     };
 
-    void fetchJobs();
+    void initPage();
 
     return () => {
       isActive = false;
@@ -275,11 +290,17 @@ export function Home() {
               className={styles.selectInput}
               value={minScore}
               onChange={(e) => setMinScore(Number(e.target.value))}
+              title="Filtrar vagas pela aderência do algoritmo de Match IA"
             >
-              <option value={0}>Qualquer Match</option>
-              <option value={70}>Match ≥ 70%</option>
-              <option value={80}>Match ≥ 80%</option>
-              <option value={90}>Match ≥ 90%</option>
+              {profileMinScore > 0 && (
+                <option value={profileMinScore}>
+                  🎯 Meu Perfil (Match ≥ {profileMinScore}%)
+                </option>
+              )}
+              <option value={0}>Todas as Vagas (Qualquer Match)</option>
+              {profileMinScore !== 70 && <option value={70}>Match ≥ 70%</option>}
+              {profileMinScore !== 80 && <option value={80}>Match ≥ 80%</option>}
+              {profileMinScore !== 90 && <option value={90}>Match ≥ 90%</option>}
             </select>
 
             <button
@@ -296,17 +317,27 @@ export function Home() {
         <div className={styles.toolbarMetaRow}>
           <span>
             Exibindo <strong>{filteredMatches.length}</strong> de <strong>{matches.length}</strong> vagas disponíveis
+            {minScore > 0 ? (
+              <span style={{ color: "#38bdf8", marginLeft: "6px" }}>
+                (filtrando por Match ≥ {minScore}%)
+              </span>
+            ) : (
+              <span style={{ color: "rgba(255,255,255,0.5)", marginLeft: "6px" }}>
+                (todas as notas)
+              </span>
+            )}
           </span>
-          {(searchTerm || onlyFavorites || minScore > 0) && (
+          {(searchTerm || onlyFavorites || minScore !== profileMinScore) && (
             <button
               className={styles.clearFiltersBtn}
               onClick={() => {
                 setSearchTerm("");
                 setOnlyFavorites(false);
-                setMinScore(0);
+                setMinScore(profileMinScore);
               }}
+              title="Restaurar critérios do perfil e limpar busca"
             >
-              Limpar filtros aplicados
+              Restaurar filtros do perfil (≥ {profileMinScore}%)
             </button>
           )}
         </div>
@@ -334,29 +365,35 @@ export function Home() {
         ) : filteredMatches.length === 0 ? (
           <div className={styles.feedbackContainer}>
             <span style={{ fontSize: "36px", marginBottom: "12px" }}>🔎</span>
-            <h3 className={styles.feedbackTitle}>Nenhuma vaga encontrada</h3>
+            <h3 className={styles.feedbackTitle}>Nenhuma vaga atende aos filtros atuais</h3>
             <p className={styles.feedbackText}>
-              Nenhuma oportunidade corresponde aos filtros aplicados. Tente ajustar o termo de busca ou clique em 'Buscar Vagas Manualmente'.
+              {minScore > 0
+                ? `Nenhuma oportunidade atingiu a nota mínima de ${minScore}% configurada no seu perfil. Você pode ver todas as vagas ou ajustar suas habilidades no perfil.`
+                : "Nenhuma oportunidade corresponde aos filtros de busca aplicados. Tente buscar novas vagas na Gupy."}
             </p>
-            <div style={{ display: "flex", gap: "10px" }}>
-              {(searchTerm || onlyFavorites || minScore > 0) && (
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center" }}>
+              {minScore > 0 && (
                 <button
                   className={styles.actionButton}
-                  onClick={() => {
-                    setSearchTerm("");
-                    setOnlyFavorites(false);
-                    setMinScore(0);
-                  }}
+                  onClick={() => setMinScore(0)}
+                  title="Ver todas as vagas sem filtro de nota mínima"
                 >
-                  Limpar Filtros
+                  Ver Todas as Vagas (Qualquer Match)
                 </button>
               )}
+              <Link
+                to="/perfil"
+                className={styles.actionButton}
+                style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+              >
+                ⚙️ Ajustar Skills no Meu Perfil
+              </Link>
               <button
                 className={styles.actionButton}
                 onClick={handleManualRefresh}
                 style={{ background: "#2563eb" }}
               >
-                Buscar Vagas na Gupy
+                Buscar Novas Vagas na Gupy
               </button>
             </div>
           </div>

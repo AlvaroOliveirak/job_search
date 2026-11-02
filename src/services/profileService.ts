@@ -51,6 +51,7 @@ export const profileService = {
 
       if (response && response.id) {
         localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(response));
+        this.recalculateLocalJobScores(data.keywords);
         return response;
       }
     } catch (err: unknown) {
@@ -65,6 +66,52 @@ export const profileService = {
     };
 
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updated));
+    this.recalculateLocalJobScores(data.keywords);
     return updated;
+  },
+
+  /**
+   * Recalcula a nota de compatibilidade das vagas em cache local
+   * com base nas palavras-chave salvas pelo usuário.
+   */
+  recalculateLocalJobScores(keywords: string): void {
+    const stored = localStorage.getItem("job_search_matches");
+    if (!stored) return;
+    try {
+      const matches = JSON.parse(stored);
+      if (!Array.isArray(matches) || matches.length === 0) return;
+
+      const terms = keywords
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean);
+
+      if (terms.length === 0) return;
+
+      const updated = matches.map((item) => {
+        const title = (item.job?.title || "").toLowerCase();
+        const desc = (item.job?.description || "").toLowerCase();
+        const text = `${title} ${desc}`;
+
+        let matchedCount = 0;
+        for (const term of terms) {
+          if (text.includes(term)) {
+            matchedCount++;
+          }
+        }
+
+        const ratio = matchedCount / terms.length;
+        const calculatedScore = Math.min(98.0, Math.round((40.0 + ratio * 58.0) * 10.0) / 10.0);
+
+        return {
+          ...item,
+          score: calculatedScore,
+        };
+      });
+
+      localStorage.setItem("job_search_matches", JSON.stringify(updated));
+    } catch (e) {
+      console.warn("Aviso ao recalcular scores em cache local:", e);
+    }
   },
 };
