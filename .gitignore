@@ -40,7 +40,6 @@ target/
 !**/src/main/**
 
 
-# APIs and Microservices (Ignored for AV1 Frontend presentation)
-backend/
-python-service/
+# Pasta clonada duplicada (cópia interna do repo)
+job_search/
 
