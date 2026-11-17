@@ -56,6 +56,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Rotas públicas
                 .requestMatchers("/api/auth/**").permitAll()
+                // Página de erro interna do Spring: sem isso, qualquer 400/409/500
+                // é encaminhado para /error e vira 403 (Acesso negado)
+                .requestMatchers("/error").permitAll()
                 .requestMatchers("/api/health/**").permitAll()
                 .requestMatchers("/api/jobs/sync/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/**").permitAll()
