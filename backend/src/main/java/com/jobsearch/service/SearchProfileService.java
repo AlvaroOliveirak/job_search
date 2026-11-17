@@ -44,10 +44,11 @@ public class SearchProfileService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
 
+        // Perfil novo começa vazio: o usuário define o próprio cargo e skills na tela de Perfil
         SearchProfile defaultProfile = new SearchProfile(
                 user,
-                "Desenvolvedor Full Stack / Front-End",
-                "React, TypeScript, Java, Spring Boot, CSS Modules, Git, REST",
+                "Meu perfil de busca",
+                "",
                 70
         );
 

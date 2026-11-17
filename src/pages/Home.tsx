@@ -196,7 +196,7 @@ export function Home() {
           {isLoggedIn ? (
             <div className={styles.userNavGroup}>
               <span className={styles.userNamePill}>
-                {user?.name || user?.email?.split("@")[0] || "Alvaro Oliver"}
+                {user?.name || user?.email?.split("@")[0] || "Candidato"}
               </span>
               <button
                 onClick={handleLogout}
