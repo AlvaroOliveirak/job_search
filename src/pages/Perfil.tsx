@@ -33,7 +33,7 @@ export function Perfil() {
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState<string>("");
   const [minScore, setMinScore] = useState<number>(70);
-  const [telegramChatId, setTelegramChatId] = useState<string>("123456789");
+  const [telegramChatId, setTelegramChatId] = useState<string>(user?.telegramChatId ?? "");
 
   // Estados do Autocomplete de Skills (Estilo LinkedIn)
   const [suggestions, setSuggestions] = useState<SkillItem[]>([]);
@@ -221,7 +221,7 @@ export function Perfil() {
           {isLoggedIn ? (
             <div className={styles.userNavGroup}>
               <span className={styles.userNamePill}>
-                {user?.name || user?.email?.split("@")[0] || "Alvaro Oliver"}
+                {user?.name || user?.email?.split("@")[0] || "Candidato"}
               </span>
               <button onClick={handleLogout} className={styles.logoutBtn} title="Encerrar sessão">
                 Sair
@@ -283,7 +283,7 @@ export function Perfil() {
                 <input
                   type="email"
                   className={`${styles.input} ${styles.inputReadOnly}`}
-                  value={user?.email || "alvarooliver1802@gmail.com"}
+                  value={user?.email || ""}
                   disabled
                   readOnly
                 />

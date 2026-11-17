@@ -132,7 +132,9 @@ function Register() {
       </div>
 
       {/* Área à direita: Sessão Ativa OU Card de Formulário Controlado */}
-      {isLoggedIn ? (
+      {/* Durante o envio o register() já marca a sessão como ativa; mantém o
+          formulário (com a mensagem de sucesso) até o redirecionamento */}
+      {isLoggedIn && !isSubmitting ? (
         <main className={styles.sessionCard}>
           <div className={styles.sessionAvatar}>
             {user?.name ? user.name.charAt(0).toUpperCase() : "U"}

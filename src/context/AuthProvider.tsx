@@ -33,6 +33,13 @@ function extractNameFromEmail(email: string): string {
   return single.charAt(0).toUpperCase() + single.slice(1).toLowerCase();
 }
 
+// Caches por usuário: sem limpar, a próxima conta herda o perfil e as vagas da anterior
+function clearUserCaches(): void {
+  localStorage.removeItem("job_search_user_profile");
+  localStorage.removeItem("job_search_matches");
+  localStorage.removeItem("job_search_last_updated");
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(() => getAuthToken());
 
@@ -74,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           method: "POST",
           body: JSON.stringify({ email: cleanEmail, password }),
         });
+        clearUserCaches();
 
         const loggedUser: User = {
           id: response.user.id,
@@ -122,6 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           method: "POST",
           body: JSON.stringify({ name, email: cleanEmail, password }),
         });
+        clearUserCaches();
 
         const loggedUser: User = {
           id: response.user.id,
@@ -158,6 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(null);
     setAuthToken(null);
     localStorage.removeItem(STORAGE_AUTH_KEY);
+    clearUserCaches();
   };
 
   const toggleAuth = () => {
