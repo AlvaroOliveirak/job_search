@@ -25,17 +25,10 @@ public class JobController {
         this.authService = authService;
     }
 
+    // A rota só é alcançada com JWT válido (SecurityConfig); sem token o Spring já responde 401
     private Long resolveUserId(Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName())) {
-            try {
-                User user = authService.getUserByEmail(authentication.getName());
-                if (user != null) {
-                    return user.getId();
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        return 1L; // Fallback para usuário de demonstração/seed
+        User user = authService.getUserByEmail(authentication.getName());
+        return user.getId();
     }
 
     @GetMapping

@@ -12,6 +12,7 @@ import com.jobsearch.repository.JobRepository;
 import com.jobsearch.repository.SearchProfileRepository;
 import com.jobsearch.repository.UserJobMatchRepository;
 import com.jobsearch.repository.UserRepository;
+import com.jobsearch.security.SyncTokenProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,15 +33,18 @@ public class JobService {
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
     private final SearchProfileRepository profileRepository;
+    private final SyncTokenProvider syncTokenProvider;
 
     public JobService(UserJobMatchRepository matchRepository,
                       JobRepository jobRepository,
                       UserRepository userRepository,
-                      SearchProfileRepository profileRepository) {
+                      SearchProfileRepository profileRepository,
+                      SyncTokenProvider syncTokenProvider) {
         this.matchRepository = matchRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
         this.profileRepository = profileRepository;
+        this.syncTokenProvider = syncTokenProvider;
     }
 
     public List<UserJobMatchResponse> getMatchesForUser(Long userId, MatchStatus status, Boolean isFavorite, Double minScore, String search) {
@@ -130,8 +134,7 @@ public class JobService {
      * Aciona sob demanda a execução do pipeline Python (Scraper Gupy + IA Matching)
      * e retorna a lista atualizada de vagas compatíveis do usuário.
      */
-    public Map<String, Object> triggerManualRefresh(Long userId) {
-        Long targetUserId = userId != null ? userId : 1L;
+    public Map<String, Object> triggerManualRefresh(Long targetUserId) {
         boolean scriptExecuted = false;
         String executionMessage = "Vagas sincronizadas.";
 
@@ -173,7 +176,12 @@ public class JobService {
                         "--chat_id", chatId
                 );
                 pb.directory(scriptFile.getParentFile());
+                // Token interno exigido por /api/jobs/sync
+                pb.environment().put("SYNC_TOKEN", syncTokenProvider.getToken());
+                // A saída do Python vai para o console do Spring. Sem isso ninguém lê o pipe,
+                // o buffer enche e o processo trava até o timeout.
                 pb.redirectErrorStream(true);
+                pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
                 Process process = pb.start();
 
                 boolean finished = process.waitFor(40, TimeUnit.SECONDS);
