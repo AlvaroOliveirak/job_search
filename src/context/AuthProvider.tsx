@@ -1,8 +1,10 @@
 // src/context/AuthProvider.tsx
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext, type User } from "./AuthContext";
-import { apiRequest, setAuthToken, getAuthToken } from "../services/api";
+import { apiRequest, setAuthToken, getAuthToken, setUnauthorizedHandler } from "../services/api";
 
+// Dados públicos do usuário logado (nunca a senha). O token JWT fica em "job_search_token" (api.ts).
 const STORAGE_AUTH_KEY = "job_search_auth";
 
 interface AuthResponse {
@@ -16,23 +18,6 @@ interface AuthResponse {
   };
 }
 
-function extractNameFromEmail(email: string): string {
-  const cleanEmail = email.toLowerCase().trim();
-  if (cleanEmail.startsWith("alvarooliver")) {
-    return "Alvaro Oliver";
-  }
-  const localPart = cleanEmail.split("@")[0] || "Candidato";
-  const withoutNumbers = localPart.replace(/\d+$/, "");
-  const parts = withoutNumbers.split(/[._-]+/).filter(Boolean);
-  if (parts.length > 1) {
-    return parts
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
-  }
-  const single = withoutNumbers || localPart;
-  return single.charAt(0).toUpperCase() + single.slice(1).toLowerCase();
-}
-
 // Caches por usuário: sem limpar, a próxima conta herda o perfil e as vagas da anterior
 function clearUserCaches(): void {
   localStorage.removeItem("job_search_user_profile");
@@ -40,146 +25,83 @@ function clearUserCaches(): void {
   localStorage.removeItem("job_search_last_updated");
 }
 
+function readStoredUser(): User | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_AUTH_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed?.user?.email) {
+        return parsed.user as User;
+      }
+    }
+  } catch {
+    // JSON corrompido: trata como deslogado
+  }
+  return null;
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const navigate = useNavigate();
+
+  // Restauração da sessão após F5: token + dados públicos do usuário salvos no login
   const [token, setToken] = useState<string | null>(() => getAuthToken());
+  const [user, setUser] = useState<User | null>(() => readStoredUser());
 
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_AUTH_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return Boolean(parsed.isLoggedIn);
-      }
-    } catch {
-      // fallback
-    }
-    return false;
-  });
+  // Só está logado quem tem token E usuário (sessões antigas da AV1, sem token, não contam)
+  const isLoggedIn = Boolean(token && user);
 
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_AUTH_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.isLoggedIn && parsed.user) {
-          return parsed.user;
-        }
-      }
-    } catch {
-      // fallback
-    }
-    return null;
-  });
+  const startSession = (response: AuthResponse) => {
+    clearUserCaches();
 
-  const login = async (email: string, password?: string, name?: string): Promise<boolean> => {
-    const cleanEmail = email.trim();
+    const loggedUser: User = {
+      id: response.user.id,
+      email: response.user.email,
+      name: response.user.name,
+      telegramChatId: response.user.telegramChatId,
+    };
 
-    // Se a senha foi informada, tenta autenticar diretamente na API do Spring Boot
-    if (password) {
-      try {
-        const response = await apiRequest<AuthResponse>("/api/auth/login", {
-          method: "POST",
-          body: JSON.stringify({ email: cleanEmail, password }),
-        });
-        clearUserCaches();
-
-        const loggedUser: User = {
-          id: response.user.id,
-          email: response.user.email,
-          name: response.user.name,
-          telegramChatId: response.user.telegramChatId,
-        };
-
-        setAuthToken(response.access_token);
-        setToken(response.access_token);
-        setIsLoggedIn(true);
-        setUser(loggedUser);
-
-        localStorage.setItem(
-          STORAGE_AUTH_KEY,
-          JSON.stringify({ isLoggedIn: true, user: loggedUser })
-        );
-
-        return true;
-      } catch (err: unknown) {
-        const error = err as Error;
-        console.warn("Falha no login com a API Spring Boot:", error.message);
-        // Propaga o erro para o componente Login exibir para o usuário
-        throw error;
-      }
-    }
-
-    // Modo simulado / fallback quando nenhuma senha é passada (ex: login social fictício)
-    const finalName = name || extractNameFromEmail(cleanEmail);
-    const loggedUser: User = { email: cleanEmail, name: finalName };
-    setIsLoggedIn(true);
+    setAuthToken(response.access_token);
+    setToken(response.access_token);
     setUser(loggedUser);
-    localStorage.setItem(
-      STORAGE_AUTH_KEY,
-      JSON.stringify({ isLoggedIn: true, user: loggedUser })
-    );
-    return true;
+    localStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify({ isLoggedIn: true, user: loggedUser }));
   };
 
-  const register = async (name: string, email: string, password?: string): Promise<boolean> => {
-    const cleanEmail = email.trim();
-
-    if (password) {
-      try {
-        const response = await apiRequest<AuthResponse>("/api/auth/register", {
-          method: "POST",
-          body: JSON.stringify({ name, email: cleanEmail, password }),
-        });
-        clearUserCaches();
-
-        const loggedUser: User = {
-          id: response.user.id,
-          email: response.user.email,
-          name: response.user.name,
-          telegramChatId: response.user.telegramChatId,
-        };
-
-        setAuthToken(response.access_token);
-        setToken(response.access_token);
-        setIsLoggedIn(true);
-        setUser(loggedUser);
-
-        localStorage.setItem(
-          STORAGE_AUTH_KEY,
-          JSON.stringify({ isLoggedIn: true, user: loggedUser })
-        );
-
-        return true;
-      } catch (err: unknown) {
-        const error = err as Error;
-        console.warn("Falha no cadastro com a API Spring Boot:", error.message);
-        throw error;
-      }
-    }
-
-    // Fallback sem senha
-    return login(cleanEmail, undefined, name);
+  // A senha só existe no corpo deste POST; nada dela é guardado
+  const login = async (email: string, password: string): Promise<void> => {
+    const response = await apiRequest<AuthResponse>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: email.trim(), password }),
+    });
+    startSession(response);
   };
 
-  const logout = () => {
-    setIsLoggedIn(false);
+  const register = async (name: string, email: string, password: string): Promise<void> => {
+    const response = await apiRequest<AuthResponse>("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name, email: email.trim(), password }),
+    });
+    startSession(response);
+  };
+
+  const logout = useCallback(() => {
     setUser(null);
     setToken(null);
     setAuthToken(null);
     localStorage.removeItem(STORAGE_AUTH_KEY);
     clearUserCaches();
-  };
+  }, []);
 
-  const toggleAuth = () => {
-    if (isLoggedIn) {
+  // Qualquer 401 vindo de uma rota protegida encerra a sessão e leva ao login
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
       logout();
-    } else {
-      login("alvarooliver1802@gmail.com", "123456", "Álvaro Oliveira");
-    }
-  };
+      navigate("/login", { replace: true, state: { reason: "expired" } });
+    });
+    return () => setUnauthorizedHandler(null);
+  }, [logout, navigate]);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, token, login, register, logout, toggleAuth }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, token, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

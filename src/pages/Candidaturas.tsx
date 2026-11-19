@@ -2,7 +2,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { UserJobMatch, MatchStatus } from "../types/job";
-import { jobStorageService } from "../services/jobStorage";
+import { jobStorageService, type OfflineSource } from "../services/jobStorage";
+import { getErrorMessage } from "../services/api";
 import { JobModal, Logo } from "../components";
 import styles from "../styles/candidaturas.module.css";
 import { useAuth } from "../hooks/useAuth";
@@ -14,6 +15,9 @@ export function Candidaturas() {
   const navigate = useNavigate();
   const [matches, setMatches] = useState<UserJobMatch[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  // null = dados vindos da API; "cache"/"seed" = modo offline escolhido pelo usuário
+  const [offlineSource, setOfflineSource] = useState<OfflineSource | null>(null);
   const [selectedMatch, setSelectedMatch] = useState<UserJobMatch | null>(null);
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -30,41 +34,66 @@ export function Candidaturas() {
     }, 2800);
   };
 
+  // Carrega as candidaturas da API (montagem, "Tentar novamente" e "Reconectar")
+  // Incrementado por "Tentar novamente"/"Reconectar" para o efeito refazer a requisição
+  const [reloadKey, setReloadKey] = useState(0);
+
   useEffect(() => {
-    let isActive = true;
+    let active = true;
+    const isActive = () => active;
 
     const fetchCandidaturas = async () => {
       try {
         const data = await jobStorageService.fetchJobs();
-        if (isActive) {
+        if (isActive()) {
           setMatches(data);
+          setOfflineSource(null);
         }
       } catch (err) {
-        console.error("Erro ao carregar candidaturas:", err);
+        if (isActive()) {
+          setError(getErrorMessage(err, "Falha ao carregar suas candidaturas. Tente novamente."));
+        }
       } finally {
-        if (isActive) {
+        if (isActive()) {
           setLoading(false);
         }
       }
     };
 
     void fetchCandidaturas();
-
     return () => {
-      isActive = false;
+      active = false;
     };
-  }, []);
+  }, [reloadKey]);
 
+  // "Tentar novamente" / "Reconectar": volta ao estado de carregamento e refaz a requisição
+  const loadCandidaturas = () => {
+    setLoading(true);
+    setError(null);
+    setReloadKey((k) => k + 1);
+  };
+
+  // Contingência: dados salvos neste navegador (ou de demonstração), somente leitura
+  const handleUseOfflineData = () => {
+    const offline = jobStorageService.loadOfflineJobs();
+    setMatches(offline.matches);
+    setOfflineSource(offline.source);
+    setError(null);
+  };
+
+  // Só muda na tela depois que a API confirmar; no modo offline fica bloqueado
   const handleUpdateStatus = async (matchId: number, status: MatchStatus) => {
+    if (offlineSource) {
+      showToast("Modo offline: reconecte à API para salvar alterações.");
+      return;
+    }
     try {
-      const updated = await jobStorageService.updateStatus(matchId, status);
-      setMatches(updated);
+      const updated = await jobStorageService.updateMatch(matchId, { status });
+      setMatches((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+      setSelectedMatch((prev) => (prev && prev.id === updated.id ? updated : prev));
       showToast(`✓ Etapa da candidatura alterada para "${status}" com sucesso!`);
-      if (selectedMatch && selectedMatch.id === matchId) {
-        setSelectedMatch((prev) => (prev ? { ...prev, status } : null));
-      }
     } catch (err) {
-      console.error("Erro ao atualizar status:", err);
+      showToast(`⚠️ ${getErrorMessage(err, "Não foi possível atualizar o status.")}`);
     }
   };
 
@@ -219,11 +248,46 @@ export function Candidaturas() {
         </span>
       </section>
 
-      {/* 5. Listagem de Candidaturas ou Empty State */}
+      {/* Modo offline: deixa claro que os dados são locais e não serão salvos no servidor */}
+      {offlineSource && !loading && (
+        <div className={styles.offlineBanner} role="status">
+          <span>
+            <strong>Modo offline:</strong>{" "}
+            {offlineSource === "cache"
+              ? "exibindo as últimas candidaturas salvas neste navegador."
+              : "exibindo dados de demonstração (nenhum dado salvo neste navegador)."}{" "}
+            Alterações estão desativadas até reconectar.
+          </span>
+          <button type="button" className={styles.emptyCta} onClick={loadCandidaturas}>
+            Reconectar
+          </button>
+        </div>
+      )}
+
+      {/* 5. Listagem de Candidaturas, Erro ou Empty State */}
       <main>
         {loading ? (
           <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text-muted)" }}>
             Carregando suas candidaturas...
+          </div>
+        ) : error ? (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>⚠️</div>
+            <h2 className={styles.emptyTitle}>Erro ao carregar candidaturas</h2>
+            <p className={styles.emptyText}>{error}</p>
+            <div className={styles.feedbackActions}>
+              <button type="button" className={styles.emptyCta} onClick={loadCandidaturas}>
+                Tentar novamente
+              </button>
+              <button
+                type="button"
+                className={styles.secondaryCta}
+                onClick={handleUseOfflineData}
+                title="Exibir as últimas candidaturas salvas neste navegador (somente leitura)"
+              >
+                Usar dados salvos (offline)
+              </button>
+            </div>
           </div>
         ) : filteredJobs.length === 0 ? (
           <div className={styles.emptyState}>

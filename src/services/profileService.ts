@@ -2,80 +2,40 @@ import type { SearchProfile, SearchProfileRequest } from "../types/profile";
 import { apiRequest } from "./api";
 
 const PROFILE_STORAGE_KEY = "job_search_user_profile";
-
-const DEFAULT_PROFILE: SearchProfile = {
-  id: 1,
-  name: "Desenvolvedor Full Stack / Front-End",
-  keywords: "React, TypeScript, Java, Spring Boot, CSS Modules, Git, REST",
-  min_score: 70,
-};
+const MATCHES_STORAGE_KEY = "job_search_matches";
 
 export const profileService = {
   /**
-   * Obtém o perfil ativo de busca e skills do usuário.
+   * GET /api/profiles/active — perfil de busca e skills do usuário logado.
+   * Lança ApiError em caso de falha (a página exibe o estado de erro).
    */
   async getActiveProfile(): Promise<SearchProfile> {
-    try {
-      const response = await apiRequest<SearchProfile>("/api/profiles/active");
-      if (response && response.id) {
-        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(response));
-        return response;
-      }
-    } catch (err: unknown) {
-      console.warn("Falha ao buscar perfil na API. Usando cache local:", (err as Error).message);
-    }
-
-    const cached = localStorage.getItem(PROFILE_STORAGE_KEY);
-    if (cached) {
-      try {
-        return JSON.parse(cached);
-      } catch {
-        // falha ao parsear
-      }
-    }
-
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(DEFAULT_PROFILE));
-    return DEFAULT_PROFILE;
+    const response = await apiRequest<SearchProfile>("/api/profiles/active");
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(response));
+    return response;
   },
 
   /**
-   * Atualiza as habilidades e o perfil de busca do usuário na API Spring Boot.
-   * A API recalcula na hora o score das vagas compatíveis.
+   * PUT /api/profiles/active — salva as skills; o Spring Boot recalcula na hora o score das vagas.
+   * Só é considerado salvo se o servidor confirmar (lança ApiError caso contrário).
    */
   async updateActiveProfile(data: SearchProfileRequest): Promise<SearchProfile> {
-    try {
-      const response = await apiRequest<SearchProfile>("/api/profiles/active", {
-        method: "PUT",
-        body: JSON.stringify(data),
-      });
+    const response = await apiRequest<SearchProfile>("/api/profiles/active", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
 
-      if (response && response.id) {
-        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(response));
-        this.recalculateLocalJobScores(data.keywords);
-        return response;
-      }
-    } catch (err: unknown) {
-      console.warn("Falha ao salvar perfil na API. Atualizando localmente:", (err as Error).message);
-    }
-
-    const updated: SearchProfile = {
-      id: 1,
-      name: data.name,
-      keywords: data.keywords,
-      min_score: data.minScore,
-    };
-
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(response));
     this.recalculateLocalJobScores(data.keywords);
-    return updated;
+    return response;
   },
 
   /**
-   * Recalcula a nota de compatibilidade das vagas em cache local
-   * com base nas palavras-chave salvas pelo usuário.
+   * Mantém o cache local de vagas coerente com o recálculo feito no servidor
+   * (mesma fórmula do JobService.recalculateMatchesForUser), para o modo offline.
    */
   recalculateLocalJobScores(keywords: string): void {
-    const stored = localStorage.getItem("job_search_matches");
+    const stored = localStorage.getItem(MATCHES_STORAGE_KEY);
     if (!stored) return;
     try {
       const matches = JSON.parse(stored);
@@ -109,7 +69,7 @@ export const profileService = {
         };
       });
 
-      localStorage.setItem("job_search_matches", JSON.stringify(updated));
+      localStorage.setItem(MATCHES_STORAGE_KEY, JSON.stringify(updated));
     } catch (e) {
       console.warn("Aviso ao recalcular scores em cache local:", e);
     }

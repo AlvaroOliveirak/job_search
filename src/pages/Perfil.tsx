@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Logo } from "../components";
 import { profileService } from "../services/profileService";
+import { getErrorMessage } from "../services/api";
 import { searchSkills, type SkillItem } from "../data/skillsCatalog";
 import { useAuth } from "../hooks/useAuth";
 import styles from "../styles/perfil.module.css";
@@ -42,6 +43,7 @@ export function Perfil() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -113,40 +115,50 @@ export function Perfil() {
     }
   };
 
-  // Carregar dados do perfil ativo
+  // Carregar dados do perfil ativo (montagem e "Tentar novamente")
+  // Incrementado por "Tentar novamente"/"Reconectar" para o efeito refazer a requisição
+  const [reloadKey, setReloadKey] = useState(0);
+
   useEffect(() => {
-    let isActive = true;
+    let active = true;
+    const isActive = () => active;
 
     const fetchProfile = async () => {
       try {
         const profile = await profileService.getActiveProfile();
-        if (isActive && profile) {
+        if (isActive() && profile) {
           setProfileName(profile.name || "Desenvolvedor Full Stack");
           setMinScore(profile.min_score ?? 70);
-
-          if (profile.keywords) {
-            const list = profile.keywords
+          setSkills(
+            (profile.keywords || "")
               .split(",")
               .map((s) => s.trim())
-              .filter(Boolean);
-            setSkills(list);
-          }
+              .filter(Boolean)
+          );
         }
       } catch (err) {
-        console.error("Erro ao carregar perfil:", err);
+        if (isActive()) {
+          setLoadError(getErrorMessage(err, "Não foi possível carregar seu perfil."));
+        }
       } finally {
-        if (isActive) {
+        if (isActive()) {
           setLoading(false);
         }
       }
     };
 
     void fetchProfile();
-
     return () => {
-      isActive = false;
+      active = false;
     };
-  }, []);
+  }, [reloadKey]);
+
+  // "Tentar novamente" / "Reconectar": volta ao estado de carregamento e refaz a requisição
+  const loadProfile = () => {
+    setLoading(true);
+    setLoadError(null);
+    setReloadKey((k) => k + 1);
+  };
 
   // Adicionar nova skill
   const handleAddSkill = (skillToAdd: string) => {
@@ -193,8 +205,7 @@ export function Perfil() {
 
       showToast("🎉 Perfil de habilidades atualizado e aderência de vagas recalculada!");
     } catch (err) {
-      console.error("Erro ao salvar perfil:", err);
-      showToast("Erro ao salvar perfil. Tente novamente.");
+      showToast(`⚠️ ${getErrorMessage(err, "Erro ao salvar perfil. Tente novamente.")}`);
     } finally {
       setSaving(false);
     }
@@ -251,6 +262,14 @@ export function Perfil() {
             <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
               Carregando dados do perfil...
             </p>
+          </div>
+        ) : loadError ? (
+          <div className={styles.sectionCard} style={{ alignItems: "center", padding: "60px 20px", textAlign: "center" }}>
+            <h2 className={styles.sectionTitle}>⚠️ Erro ao carregar o perfil</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>{loadError}</p>
+            <button type="button" className={styles.saveBtn} onClick={loadProfile}>
+              Tentar novamente
+            </button>
           </div>
         ) : (
           <form className={styles.formCard} onSubmit={handleSubmit}>

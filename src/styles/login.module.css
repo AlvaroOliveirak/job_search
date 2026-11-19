@@ -219,37 +219,6 @@
   box-sizing: border-box;
 }
 
-/* Linha de Opções */
-.optionsRow {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  box-sizing: border-box;
-}
-
-.checkboxLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  color: var(--text-secondary);
-}
-
-.checkboxLabel input[type="checkbox"] {
-  accent-color: var(--accent-primary);
-}
-
-.forgotLink {
-  color: var(--accent-blue);
-  text-decoration: none;
-}
-
-.forgotLink:hover {
-  text-decoration: underline;
-}
-
 /* Botão de Entrar */
 .loginButton {
   margin-top: 6px;

@@ -1,6 +1,6 @@
 // src/pages/Login.tsx
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import styles from "../styles/login.module.css";
 import { useAuth } from "../hooks/useAuth";
 
@@ -10,15 +10,29 @@ interface LoginFormErrors {
   api?: string; // erro vindo do servidor
 }
 
+interface LoginRedirectState {
+  from?: string;
+  reason?: "expired";
+}
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLoggedIn, user, login, logout } = useAuth();
+
+  // Preenchido pelo ProtectedRoute ({ from }) ou pelo tratamento de 401 ({ reason: "expired" })
+  const redirectState = location.state as LoginRedirectState | null;
+  const redirectNotice =
+    redirectState?.reason === "expired"
+      ? "Sua sessão expirou. Faça login novamente."
+      : redirectState?.from
+        ? "Faça login para acessar essa página."
+        : null;
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -65,7 +79,8 @@ function Login() {
     try {
       await login(email.trim(), password);
       showToast("✓ Login realizado com sucesso!");
-      navigate("/home");
+      // Volta para a página protegida que o usuário tentou abrir (ou /home)
+      navigate(redirectState?.from ?? "/home", { replace: true });
     } catch (err: unknown) {
       const error = err as Error;
       const apiMsg = error.message || "Falha ao realizar login. Tente novamente.";
@@ -159,6 +174,13 @@ function Login() {
 
 
         <form onSubmit={handleSubmit} className={styles.loginForm} noValidate>
+          {/* Motivo do redirecionamento: sessão expirada ou página protegida */}
+          {redirectNotice && !errors.api && (
+            <div className={styles.generalErrorAlert} style={{ borderColor: "#38bdf8", color: "#38bdf8" }}>
+              🔒 {redirectNotice}
+            </div>
+          )}
+
           {/* Erro vindo da API (servidor offline, credenciais erradas, etc.) */}
           {errors.api && (
             <div className={styles.generalErrorAlert} style={{ borderColor: "#ef4444", color: "#ef4444" }}>
@@ -220,21 +242,6 @@ function Login() {
           {errors.password && (
             <span className={styles.errorMessage}>{errors.password}</span>
           )}
-
-          {/* Opções: Lembrar de mim e Esqueci a senha */}
-          <div className={styles.optionsRow}>
-            <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-              />
-              Lembrar de mim
-            </label>
-            <a href="#recuperar" className={styles.forgotLink}>
-              Esqueceu a senha?
-            </a>
-          </div>
 
           <button
             type="submit"

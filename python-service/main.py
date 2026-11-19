@@ -4,6 +4,7 @@ Fluxo completo: Scraping Gupy Real -> NLP Matching -> Alertas Telegram -> Sincro
 """
 import sys
 import io
+import os
 import argparse
 
 if sys.platform == "win32":
@@ -92,14 +93,21 @@ def run_pipeline():
             )
 
     # 5. Sincronização com o Back-End Spring Boot
-    print("\n📡 3. Sincronizando vagas com o Back-end Spring Boot (http://localhost:8082)...")
-    client = SpringBootSyncClient(base_url="http://localhost:8082")
+    spring_url = os.environ.get("SPRING_API_URL", "http://localhost:8082")
+    print(f"\n📡 3. Sincronizando vagas com o Back-end Spring Boot ({spring_url})...")
+    client = SpringBootSyncClient(base_url=spring_url)
     response = client.sync_jobs(user_id=user_id, scored_jobs=scored_jobs)
 
     print(f"  • Status da Sincronização: {response.get('status')}")
     print(f"  • Mensagem: {response.get('message')}")
     if "total_synced" in response:
         print(f"  • Total de Vagas Gravadas no Banco H2: {response.get('total_synced')}")
+
+    if response.get("status") != "success":
+        # Código de saída != 0 faz o Spring Boot informar a falha ao usuário em vez de "sucesso"
+        print("\n✗ Pipeline concluído, mas a sincronização com o Spring Boot falhou.")
+        print("=" * 65)
+        sys.exit(1)
 
     print("\n✓ Pipeline concluído com sucesso!")
     print("=" * 65)
