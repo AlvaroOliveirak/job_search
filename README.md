@@ -1,7 +1,7 @@
 # ⚡ Job Search — Plataforma Inteligente de Carreiras & Match IA
 
-> **Projeto Evolutivo — Disciplina de Desenvolvimento de Software (AV1 & AV2)**  
-> Plataforma Full-Stack integrada com Front-End em **React 19 + TypeScript + Vite**, Back-End RESTful em **Java 21 LTS + Spring Boot 3**, e Microsserviço de Coleta e Inteligência Artificial em **Python (Scraping Gupy + NLP Matcher + Telegram Alerts)**.
+> **Projeto Evolutivo — Disciplina de Front-end Frameworks (AV1 & AV2) — Opção B (back-end próprio)**
+> Front-End em **React 19 + TypeScript + Vite**, API RESTful em **Java 21 + Spring Boot 4.1.1** e pipeline de coleta e compatibilidade em **Python** (vagas reais da Gupy). Tudo neste mesmo repositório (monorepo): front-end na raiz, back-end em [`backend/`](backend/) e pipeline em [`python-service/`](python-service/).
 
 ---
 
@@ -16,184 +16,215 @@ No mercado de tecnologia, candidatos perdem horas preenchendo formulários repet
 
 ---
 
-## 2. 👥 Integrantes da Equipe
+## 2. 👥 Integrantes e Contribuição
 
-| Integrante | Contato / GitHub | Principais Contribuições |
+| Integrante | Contato | Principais contribuições |
 | :--- | :--- | :--- |
-| **Álvaro Oliveira** | `alvarooliver1802@gmail.com` | • Arquitetura do monorepo e padronização do Front-End na raiz.<br>• Landing Page Institucional (`Init.tsx`) e renderização condicional de autenticação.<br>• Formulários controlados com validação estrita e mensagens em pt-BR (`Login.tsx`, `Register.tsx`).<br>• Painel de gestão de candidaturas (`Candidaturas.tsx`) com cálculo de KPIs em tempo real.<br>• Gerenciamento global de autenticação com Context API (`AuthContext`, `AuthProvider`, `useAuth`).<br>• Integração com JWT Bearer Token, configuração de CORS e resolução de compatibilidade do ecossistema. |
-| **Juan Pablo** | `juandeooliveira@gmail.com` | • Modelagem do domínio de vagas (`Job`, `MatchStatus`, `UserJobMatch`) e perfil ativo.<br>• Criação da página de perfil e competências com autocomplete LinkedIn-style (`Perfil.tsx`, `skillsCatalog.ts`).<br>• Feed interativo de vagas (`JobCard.tsx`, `JobModal.tsx`) com badges de publicação recente e tempo relativo.<br>• Botão de atualização manual de vagas sob demanda e barra de sincronização na Home.<br>• Implementação do Scraper real da API da Gupy com SHA-256 e motor de IA/NLP em Python.<br>• Endpoints de skills (`SkillController`), perfis ativos e recálculo instantâneo no Spring Boot. |
+| **Álvaro Oliveira** | `alvarooliver1802@gmail.com` | **AV1:** estrutura inicial React + Vite, landing page (`Init.tsx`), formulários controlados (`Login.tsx`, `Register.tsx`), painel de candidaturas com KPIs (`Candidaturas.tsx`), Context API de autenticação (`AuthContext`, `useAuth`), seed `vagas.json`.<br>**AV2:** front-end movido para a raiz / monorepo (`65cda5d`), mensagens de erro de rede e HTTP em pt-BR (`4266f02`), integração das branches de perfil e scraper (`9bd62db`), revisão visual (`3375fb1`), README (`323fb46`, `1223147`), limpeza do repositório (`6e07c3a`, `df20d33`). |
+| **Juan Pablo** | `juandeooliveira@gmail.com` | **AV1:** tipos de domínio (`types/job.ts`), repositório `jobStorage.ts` com `localStorage`, `JobCard`, `JobModal`, `Home.tsx` com busca e filtros.<br>**AV2:** cliente HTTP central com JWT (`b7b91b0`), login/cadastro na API (`688cb16`), `jobStorage` na API (`ada3d54`), porta 8082 (`529ec22`); página de Perfil, autocomplete de skills, `/api/skills`, perfil ativo com recálculo de score, scraper real da Gupy e botão "Atualizar Vagas" — commits `7fc99d7`, `5a4245b`, `148d227`, `cdc67fc`, `c1f4331`, `a0833f1` nas branches `feat/live-gupy-scraper` e `feat/user-skills-profile` (integradas ao `main` via `9bd62db`); filtro pelo perfil (`fb1b138`); correções de cadastro e de dados entre contas (`4d5526b`, `1d2ca56`); rota protegida, tratamento de 401/403, estados de erro e modo offline, token do sync (branch `feat/av2-pendencias`). |
 
 ---
 
 ## 3. 📁 Estrutura do Monorepo
 
-O projeto está organizado na raiz do repositório em três módulos integrados:
-
 ```plaintext
 job_search/
-├── src/                    # 🚀 Front-End Principal (React 19 + TypeScript + Vite)
-│   ├── components/         # Componentes reutilizáveis (JobCard, JobModal, Logo, Footer, ResumeUpload...)
-│   ├── context/            # Autenticação global com Context API (AuthContext, AuthProvider)
-│   ├── data/               # Catálogo canônico de 60+ skills de TI (skillsCatalog.ts) e fallback local
-│   ├── hooks/              # Custom hook useAuth
-│   ├── pages/              # Telas da aplicação (Init, Home, Candidaturas, Perfil, Login, Register)
-│   ├── services/           # Camada de comunicação com API Spring Boot (api.ts, jobStorage.ts, profileService.ts)
-│   ├── styles/             # CSS Modules escopados por tela/componente
-│   ├── types/              # Definições estritas de tipos TypeScript (job.ts, profile.ts)
-│   └── utils/              # Formatadores de data relativa e validação de publicação recente (dateUtils.ts)
-├── backend/                # ☕ Back-End RESTful (Java 21 LTS + Spring Boot 3 + H2 Database)
-│   ├── src/main/java/com/jobsearch/
-│   │   ├── config/         # Carga inicial de sementes e configurações (DataSeeder.java)
-│   │   ├── controller/     # Endpoints REST (AuthController, JobController, SearchProfileController, SkillController)
-│   │   ├── dto/            # Data Transfer Objects (Login, Register, JobSync, Profile, MatchUpdate)
-│   │   ├── model/          # Entidades JPA (User, Job, UserJobMatch, SearchProfile)
-│   │   ├── repository/     # Interfaces Spring Data JPA (UserRepository, JobRepository, etc.)
-│   │   ├── security/       # Spring Security, JWT Auth Filter e TokenService
-│   │   └── service/        # Regras de negócio, recálculo de match e gatilho de scraping
-│   ├── pom.xml
-│   └── mvnw / mvnw.cmd
-├── python-service/         # 🐍 Microserviço de Scraping, IA e Notificações
-│   ├── scraper.py          # Coleta ao vivo da API pública da Gupy com deduplicação por hash SHA-256
-│   ├── ai_matcher.py       # Motor de processamento de linguagem natural (NLP) e cálculo de aderência
-│   ├── telegram_notifier.py# Envio de alertas instantâneos de vagas de alto match para o Telegram
-│   ├── sync_client.py      # Cliente HTTP para sincronização automática com o backend na porta 8082
-│   └── main.py             # Orquestrador com suporte a CLI dinâmica (--keywords, --user_id, etc.)
-├── package.json            # Configuração e scripts npm do Front-End
-└── vite.config.ts          # Configuração do Vite
+├── src/                    # Front-End (React 19 + TypeScript + Vite)
+│   ├── pages/              # Telas ligadas a rotas (Init, Home, Candidaturas, Perfil, Login, Register)
+│   ├── components/         # Peças reutilizáveis (JobCard, JobModal, Logo, Footer, ResumeUpload, ProtectedRoute)
+│   ├── services/           # Única camada que acessa a rede: api.ts (fetch + JWT + erros), jobStorage.ts, profileService.ts
+│   ├── context/            # Sessão global (AuthContext, AuthProvider)
+│   ├── hooks/              # useAuth — acesso tipado ao contexto de autenticação
+│   ├── types/              # Contratos TypeScript iguais ao JSON da API (job.ts, profile.ts)
+│   ├── data/               # Dados estáticos: catálogo de skills e vagas de demonstração (contingência)
+│   ├── utils/              # Funções puras de data (tempo relativo, selo "Nova")
+│   └── styles/             # CSS Modules por tela/componente
+├── backend/                # API REST (Java 21 + Spring Boot 4.1.1 + Spring Security + JWT + H2)
+│   └── src/main/java/com/jobsearch/
+│       ├── config/         # DataSeeder (usuários e perfis de demonstração)
+│       ├── controller/     # AuthController, JobController, JobSyncController, SearchProfileController, SkillController
+│       ├── dto/            # Corpos de requisição/resposta
+│       ├── model/          # Entidades JPA (User, Job, UserJobMatch, SearchProfile)
+│       ├── repository/     # Spring Data JPA
+│       ├── security/       # SecurityConfig, JwtAuthenticationFilter, JwtTokenProvider, SyncTokenProvider
+│       └── service/        # Regras de negócio, recálculo de score e disparo do pipeline Python
+├── python-service/         # Pipeline de coleta (Gupy) + compatibilidade + sincronização (só biblioteca padrão)
+├── .env.example            # VITE_API_URL do front-end
+└── backend/.env.example    # JWT_SECRET e SYNC_TOKEN (opcionais em desenvolvimento)
 ```
 
 ---
 
-## 4. 🌟 Funcionalidades Implementadas
+## 4. 🌟 Funcionalidades
 
-### 4.1 Front-End (React + TypeScript)
-- [x] **Landing Page Institucional (`/`):** Comunicação de proposta de valor, métricas dinâmicas, categorias em destaque, FAQ interativo e cabeçalho com renderização condicional para usuários autenticados.
-- [x] **Feed de Vagas Inteligente (`/home`):**
-  - Vagas com badge de afinidade IA (`★ % Match`), plataforma de origem e indicador de vagas publicadas recentemente (`⚡ Recente`).
-  - Data de publicação amigável relativa (`Há 2 horas`, `Ontem`, `Há 3 dias`).
-  - Botão **"🚀 Buscar Vagas Manualmente"** para varrer a Gupy e recalcular compatibilidade em tempo real.
-  - Barra de status de sincronização exibindo a fonte de dados e o timestamp da última coleta.
-  - Modal com descrição integral dos requisitos e controle de status da candidatura.
-- [x] **Perfil de Habilidades & Matching (`/perfil`):**
-  - Autocomplete estilo LinkedIn conectado ao catálogo canônico de mais de 60 tecnologias de TI.
-  - Inclusão e exclusão de tags de competências com navegação fluida por teclado (setas, Enter, Esc).
-  - Configuração da nota mínima de corte para alertas e definição de Telegram Chat ID.
-  - Ao salvar o perfil, a aderência de todas as vagas salvas é recalculada imediatamente pela IA.
-- [x] **Painel de Acompanhamento de Candidaturas (`/candidaturas`):**
-  - Painel de KPIs dinâmicos (Total de Candidaturas, Em Análise, Entrevistas Agendadas, Média de Match).
-  - Abas de filtragem por etapa do processo seletivo e alteração de status em tempo real.
-- [x] **Autenticação Segura (`/login` e `/Register`):**
-  - Formulários controlados com validação reativa e exibição de mensagens amigáveis em português.
-  - Armazenamento seguro de Token JWT e sincronização com Context API.
-- [x] **Persistência Híbrida e Resiliência Offline:**
-  - Acesso direto aos endpoints Spring Boot quando o servidor estiver ativo.
-  - Fallback transparente com `localStorage` caso o serviço externo esteja temporariamente offline.
+### 4.1 Front-End
+- **Landing page (`/`):** proposta de valor, métricas, categorias, FAQ e cabeçalho que muda conforme a sessão.
+- **Login e cadastro (`/login`, `/Register`):** formulários controlados com validação (e-mail, senha ≥ 6, confirmação de senha), mensagens de erro de API em pt-BR e upload de currículo no cadastro.
+- **Área protegida:** `/home`, `/candidaturas` e `/perfil` só abrem com sessão; sem ela o usuário é levado ao login e volta para a página pedida depois de entrar.
+- **Vagas (`/home`):** cards com nota de compatibilidade, origem, selo "Nova" e data relativa; busca, filtro por nota (inicializado pelo perfil) e favoritos; modal com descrição e status; botão **"Atualizar Vagas"** que busca vagas reais na Gupy.
+- **Candidaturas (`/candidaturas`):** KPIs, abas por etapa e alteração de status.
+- **Perfil (`/perfil`):** cargo, skills com autocomplete, nota mínima e Telegram Chat ID; salvar recalcula a nota das vagas.
+- **Estados de requisição:** carregamento, sucesso, vazio e erro com **"Tentar novamente"** em Vagas, Candidaturas e Perfil.
+- **Modo offline (contingência):** na tela de erro, "Usar dados salvos" exibe a última resposta da API guardada no navegador (ou vagas de demonstração), com faixa de aviso e alterações bloqueadas.
 
-### 4.2 Back-End (Spring Boot 3 + Java 21)
-- [x] **API de Autenticação JWT (`/api/auth`):** Registro e login criptografados com BCrypt e emissão de tokens JWT stateless.
-- [x] **Taxonomia de Competências (`/api/skills`):** Catálogo padronizado de habilidades de tecnologia com busca instantânea via query parameter.
-- [x] **Gerenciamento de Perfis Ativos (`/api/profiles/active`):** Consulta e atualização do perfil de busca e skills do candidato conectado.
-- [x] **Sincronização de Vagas (`/api/jobs/sync`):** Endpoint que recebe lotes de vagas do pipeline Python, garantindo persistência deduplicada por `job_hash`.
-- [x] **Gatilho de Atualização Manual (`POST /api/jobs/refresh`):** Executa o pipeline Python sob demanda repassando as competências do usuário e retornando as vagas atualizadas.
-- [x] **Recálculo Instantâneo de Score:** Algoritmo no `JobService` que atualiza as notas de aderência logo após qualquer modificação nas habilidades do candidato.
-- [x] **Segurança e CORS:** Rotas públicas e protegidas organizadas via `SecurityConfig`, suporte a chamadas cruzadas e visualizador Web do H2 Console.
+### 4.2 Back-End
+- **Autenticação JWT (`/api/auth`):** cadastro e login com senha em BCrypt e token JWT stateless (24 h).
+- **Proteção:** `/api/jobs/**` e `/api/profiles/**` exigem JWT válido; sem token ou com token inválido/expirado a resposta é **401**.
+- **Vagas (`/api/jobs`):** listagem por usuário, alteração de favorito/status e `POST /api/jobs/refresh`, que executa o pipeline Python com as skills do usuário.
+- **Perfil ativo (`/api/profiles/active`)** com recálculo imediato do score e **catálogo de skills (`/api/skills`)**, público.
+- **Sincronização (`/api/jobs/sync`):** recebe as vagas do Python, deduplica por `job_hash` e exige o header `X-Sync-Token`.
 
-### 4.3 Pipeline Python (Scraping & IA)
-- [x] **Live Gupy Scraper:** Consumo direto da API oficial da Gupy sem necessidade de navegadores headless pesados.
-- [x] **Deduplicação Criptográfica:** Geração de hash SHA-256 combinando empresa, título e URL para evitar duplicatas no banco de dados.
-- [x] **NLP Matcher:** Análise de relevância textual comparando as skills do usuário com o título e corpo da vaga.
-- [x] **Notificações Telegram:** Disparo automático de alertas para oportunidades com match igual ou superior a 85%.
+### 4.3 Pipeline Python
+- Coleta vagas reais da API pública da Gupy usando até 4 skills do usuário como termos de busca.
+- Deduplica por SHA-256 (empresa + título + URL), calcula a compatibilidade e envia ao Spring Boot.
+- Alerta de Telegram para nota ≥ 85% (**simulado**: a mensagem é impressa no console).
 
 ---
 
-## 5. 🗺️ Rotas do Front-End
+## 5. 🗺️ Rotas da Aplicação
 
-| Rota | Componente | Finalidade |
-| :--- | :--- | :--- |
-| `/` | `<Init />` | Landing page institucional de apresentação do produto. |
-| `/home` | `<Home />` | Painel de oportunidades com busca, filtros de match e atualização ao vivo. |
-| `/perfil` | `<Perfil />` | Gestão de competências, autocomplete LinkedIn-style e preferências de alertas. |
-| `/candidaturas` | `<Candidaturas />` | Painel de controle e acompanhamento das etapas seletivas com KPIs. |
-| `/Register` | `<Register />` | Formulário controlado para cadastro de novos candidatos. |
-| `/login` | `<Login />` | Tela de autenticação com validação estrita e suporte a JWT. |
+| Rota | Componente | Acesso | Finalidade |
+| :--- | :--- | :--- | :--- |
+| `/` | `<Init />` | Pública | Landing page institucional. |
+| `/login` (`/Login`) | `<Login />` | Pública | Autenticação com JWT. |
+| `/Register` | `<Register />` | Pública | Cadastro de candidato. |
+| `/home` | `<Home />` | **Protegida** | Vagas recomendadas, filtros e "Atualizar Vagas". |
+| `/candidaturas` (`/applications`) | `<Candidaturas />` | **Protegida** | Acompanhamento das etapas e KPIs. |
+| `/perfil` (`/profile`) | `<Perfil />` | **Protegida** | Skills, nota mínima e preferências. |
+
+As rotas protegidas ficam dentro de `<ProtectedRoute />` em [`src/App.tsx`](src/App.tsx).
 
 ---
 
-## 6. 🛠️ Como Executar a Aplicação
+## 6. 🛠️ Tecnologias
+
+| Camada | Tecnologias |
+| :--- | :--- |
+| Front-End | React 19, TypeScript, Vite, React Router DOM 7, CSS Modules, Context API, Fetch API, `localStorage` |
+| Back-End | Java 21, Spring Boot 4.1.1, Spring Web, Spring Security, Spring Data JPA, JJWT 0.12, BCrypt, H2 (em memória) |
+| Pipeline | Python 3.10+ (somente biblioteca padrão: `urllib`, `json`, `hashlib`, `re`, `argparse`) |
+| Ferramentas | ESLint, Maven Wrapper, Git/GitHub |
+
+---
+
+## 7. ▶️ Como Executar
 
 ### Pré-requisitos
-- **Node.js** (versão 18+) e **npm**
-- **Java JDK 21** configurado no PATH
-- **Python 3.10+** (para o serviço de coleta e IA)
+- **Node.js 18+** e **npm**
+- **Java JDK 21** no PATH
+- **Python 3.10+** no PATH como `python` (Windows) ou `python3` (Linux/macOS), usado pelo botão "Atualizar Vagas"
 
----
-
-### Passo 1: Executar o Back-End (Spring Boot)
-
-Abra um terminal na pasta do backend:
-
+### Passo 1 — Back-End (porta 8082)
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
-*(No Windows PowerShell: `./mvnw spring-boot:run`)*
+- Variáveis **opcionais** (ver [`backend/.env.example`](backend/.env.example)): `JWT_SECRET` (chave Base64 de produção) e `SYNC_TOKEN` (só para rodar o Python manualmente).
+- H2 Console: `http://localhost:8082/h2-console` — JDBC URL `jdbc:h2:mem:jobsearchdb`, usuário `sa`, senha em branco.
 
-* **Porta:** `http://localhost:8082`
-* **H2 Console:** `http://localhost:8082/h2-console`  
-  * *JDBC URL:* `jdbc:h2:mem:jobsearchdb`  
-  * *User:* `sa` | *Password:* *(em branco)*
-
----
-
-### Passo 2: Executar o Front-End (React + Vite)
-
-Abra outro terminal na **raiz do projeto**:
-
+### Passo 2 — Front-End (porta 5173)
+Na **raiz** do repositório:
 ```bash
-# Instalar as dependências (se ainda não tiver instalado)
+cp .env.example .env      # opcional: o padrão já é http://localhost:8082
 npm install
-
-# Iniciar o servidor de desenvolvimento
 npm run dev
 ```
+Build e validação de tipos: `npm run build` · Lint: `npm run lint`.
 
-* **Acesso Web:** `http://localhost:5173`
-* **Build de Produção e Validação TypeScript:**
-  ```bash
-  npm run build
-  ```
+### Passo 3 — Pipeline Python (opcional, manual)
+O botão **"Atualizar Vagas"** já executa o pipeline. Para rodar pelo terminal, inicie o back-end e o Python com o **mesmo** `SYNC_TOKEN` — instruções em [`python-service/README.md`](python-service/README.md).
 
----
+### Usuários de demonstração
+O banco H2 é recriado a cada inicialização com:
 
-### Passo 3: Executar o Pipeline de Coleta Python (Opcional / Manual)
+| E-mail | Senha | Perfil |
+| :--- | :--- | :--- |
+| `alvarooliver1802@gmail.com` | `123456` | Front-End & Full-Stack (React, TypeScript, Java) |
+| `demo@jobsearch.com` | `123456` | Back-End & Dados (Python, SQL, Docker, AWS) |
 
-O Spring Boot já consegue acionar o script Python automaticamente pelo botão **"Buscar Vagas Manualmente"** na interface. Caso deseje executar o pipeline de forma independente pelo terminal:
-
-```bash
-cd python-service
-python main.py --user_id 1 --keywords "React, TypeScript, Java, Spring Boot, Docker"
-```
+> Senhas **apenas de demonstração** (armazenadas com BCrypt no banco em memória). Contas novas começam sem vagas: use "Atualizar Vagas" para coletar.
 
 ---
 
-## 7. 🔑 Usuários Pré-configurados (Seed Inicial)
+## 8. 💾 Dados e Persistência
 
-O banco de dados H2 inicializa com usuários de demonstração prontos para teste:
+| Dado | Onde fica | Observação |
+| :--- | :--- | :--- |
+| Usuários, perfis, vagas, favoritos, status | **API Spring Boot** (H2) | Fonte de verdade. Recriado a cada inicialização do back-end. |
+| Vagas novas | **Gupy** → Python → `/api/jobs/sync` | Coletadas sob demanda pelo botão "Atualizar Vagas". |
+| `job_search_token` | `localStorage` | Token JWT (expira em 24 h), enviado como `Authorization: Bearer`. |
+| `job_search_auth` | `localStorage` | Dados públicos do usuário (id, nome, e-mail) para restaurar a sessão após F5. |
+| `job_search_matches`, `job_search_user_profile`, `job_search_last_updated` | `localStorage` | **Cache** da última resposta da API, usado só no modo offline. Apagado no login e no logout. |
+| Catálogo de skills | `src/data/skillsCatalog.ts` | Estático, usado no autocomplete. |
+| Vagas de demonstração | `src/data/vagas.json` | Contingência quando a API está fora e não há cache (origem "Demonstração"). |
 
-| E-mail | Senha | Nome | Perfil / Stack |
+**A senha nunca é armazenada no navegador:** ela só trafega no corpo do `POST /api/auth/login` ou `/register`.
+
+---
+
+## 9. 📜 Contrato da API
+
+**URL-base:** `http://localhost:8082` (configurável no front por `VITE_API_URL`, em [`src/services/api.ts`](src/services/api.ts)). JSON em todas as rotas. CORS liberado para `http://localhost:5173`, `http://127.0.0.1:5173` e `http://localhost:3000`.
+
+**Autenticação:** rotas marcadas com 🔒 exigem `Authorization: Bearer <token>`.
+
+| Método | Rota | Corpo | Resposta (sucesso) | Erros |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | `{ name, email, password }` | `201` `{ access_token, token_type, user: { id, email, name, telegramChatId } }` | `400` e-mail já cadastrado ou dados inválidos |
+| `POST` | `/api/auth/login` | `{ email, password }` | `200`, mesmo formato do cadastro | `401` credenciais inválidas · `403` usuário inativo |
+| `GET` 🔒 | `/api/jobs` | — (filtros opcionais `status`, `isFavorite`, `minScore`, `search`) | `200` `[ { id, user_id, job_id, score, status, is_favorite, is_notified_telegram, matched_at, job: { id, job_hash, title, company, location, url, description, source, posted_at, created_at } } ]` | `401` |
+| `PATCH` 🔒 | `/api/jobs/{id}` | `{ is_favorite }` e/ou `{ status }` (`new`, `viewed`, `applied`, `interview`, `rejected`, `discarded`) | `200` item atualizado | `401` · `404` |
+| `POST` 🔒 | `/api/jobs/refresh` | — | `200` `{ status: "success" \| "info", message, total_jobs, updated_at, matches }` | `401` · o pipeline tem limite de 40 s; se falhar, `status: "info"` com as vagas já salvas |
+| `GET` 🔒 | `/api/profiles/active` | — | `200` `{ id, name, keywords, min_score, created_at }` | `401` |
+| `PUT` 🔒 | `/api/profiles/active` | `{ name, keywords, minScore }` | `200` perfil salvo (o score das vagas é recalculado) | `400` campos vazios · `401` |
+| `GET` | `/api/skills?search=` | — | `200` `[ { name, category } ]` | — |
+| `POST` | `/api/jobs/sync` | Header `X-Sync-Token` · `{ user_id, jobs: [ { job_hash, title, company, location, url, description, source, score, posted_at } ] }` | `200` `{ status, message, total_synced }` | `401` token de sincronização ausente/inválido |
+
+**Formato dos erros:** `{ timestamp, status, error, message, path }`. O front exibe `message` quando existe e, caso contrário, uma frase em pt-BR por status (`0` rede, `400`, `401`, `403`, `404`, `409`, `422`, `5xx`).
+
+**Como a interface reage:**
+- `401` em rota protegida → sessão encerrada e redirecionamento para `/login` com "Sua sessão expirou".
+- `401` no login → "E-mail ou senha incorretos." no formulário.
+- `403` → mensagem "Acesso negado", sem encerrar a sessão.
+- Falha de rede → estado de erro com "Tentar novamente" e "Usar dados salvos (offline)".
+
+---
+
+## 10. 🔄 Evolução da AV1 para a AV2
+
+| Aspecto | Situação na AV1 | Evolução na AV2 | Evidência |
 | :--- | :--- | :--- | :--- |
-| `alvarooliver1802@gmail.com` | `123456` | Alvaro Oliver | Front-End & Full-Stack (React, TypeScript, Java) |
-| `demo@jobsearch.com` | `123456` | Usuário Demo | Back-End & Dados (Python, SQL, Docker, AWS) |
+| Dados | `vagas.json` com 4 vagas lido do `localStorage` (atraso artificial de 350 ms) | Vagas da API Spring Boot, coletadas na Gupy pelo Python; `localStorage` vira cache do modo offline | `src/services/jobStorage.ts` (`fetchJobs`, `manualRefreshJobs`, `updateMatch`); commits `b7b91b0`, `ada3d54` |
+| Autenticação | Simulada: qualquer e-mail entrava, sem checar senha | Login/cadastro com JWT, rota protegida, 401 encerra a sessão, logout limpa tudo; back-end exige token | `AuthProvider.tsx`, `ProtectedRoute.tsx`, `api.ts`, `SecurityConfig.java`; commits `688cb16`, `4266f02`, `4d5526b`, `1d2ca56` e branch `feat/av2-pendencias` |
+| Estados da interface | Lista e vazio | Carregamento, sucesso, vazio, erro com "Tentar novamente" e modo offline | `Home.tsx`, `Candidaturas.tsx`, `Perfil.tsx`; commit `fb1b138` e branch `feat/av2-pendencias` |
+| Organização | Front em `job_searcher/`, um único serviço | Front na raiz com `services/`, `types/`, `utils/`, `components/ProtectedRoute`; back-end e pipeline no mesmo repositório | commits `65cda5d`, `9bd62db` |
+| Funcionalidades novas | — | Página de Perfil com skills, coleta real na Gupy, recálculo de score | branches `feat/live-gupy-scraper`, `feat/user-skills-profile` |
+| Preservado da AV1 | — | Landing page, filtros, favoritos, modal de detalhes, KPIs de candidaturas, toasts, upload de currículo, mesmas rotas | `src/pages/*`, tag `entrega-av1` |
+| Removido de propósito | Login social fictício (Google/LinkedIn), checkbox "Lembrar de mim" e link "Esqueceu a senha?" | Removidos por serem apenas visuais (sem funcionamento real) | `Login.tsx` |
 
 ---
 
-## 8. 📋 Conformidade de Critérios Acadêmicos
+## 11. ⚠️ Limitações e Contingência
 
-- [x] **Comunicação e Proposta de Valor:** Apresentação clara de benefícios, fluxo do produto e FAQ (`/`).
-- [x] **Formulários Controlados e Validação:** Validação reativa de campos, tratamento de erros de rede e formato em pt-BR.
-- [x] **Gestão de Estado Global:** Autenticação stateless via Context API e JWT tokens integrados.
-- [x] **Feed de Vagas & Compatibilidade:** Listagem em grid responsivo com notas de aderência e filtros com `useMemo`.
-- [x] **Gestão de Candidaturas & KPIs:** Atualização dinâmica de status (`applied`, `viewed`, `interview`, `discarded`) e cálculo de métricas agregadas.
-- [x] **Página de Perfil Interativa:** Tags visuais de competências com autocomplete LinkedIn e recálculo instantâneo de aderência.
-- [x] **Arquitetura em Camadas:** Repository Pattern no frontend com tolerância a falhas offline e separação estrita de responsabilidades no backend (Controller, Service, Repository, DTO).
-- [x] **Design e Responsividade:** CSS Modules com paleta Dark/Neon, microinterações, estados de loading e toasts de feedback de ações.
+**Contingência:** se a API cair, as telas mostram o erro com **"Tentar novamente"** e **"Usar dados salvos (offline)"**. No modo offline, os dados vêm da última resposta da API guardada no navegador ou, se não houver, das vagas de demonstração; uma faixa avisa que são dados locais e favoritar, mudar status e atualizar vagas ficam bloqueados até reconectar.
+
+**Limitações conhecidas:**
+- **H2 em memória:** reiniciar o back-end apaga usuários criados e vagas coletadas; tokens antigos passam a receber 401 e o usuário volta ao login.
+- **Token no `localStorage`:** prático para o projeto, mas exposto a XSS; em produção usaríamos cookie `HttpOnly`.
+- **Telegram simulado:** o alerta é impresso no console do pipeline.
+- **Duas fórmulas de score:** o Python calcula a nota na coleta; ao salvar o perfil, o Java recalcula por proporção de skills encontradas (40 + proporção × 58).
+- **"Atualizar Vagas" é síncrono:** a requisição espera o pipeline (limite de 40 s) e depende de `python` no PATH.
+- **Sem recuperação de senha:** o link "Esqueceu a senha?" da AV1 era apenas visual e foi removido; não há fluxo de redefinição de senha.
+
+---
+
+## 12. 🤖 Uso de Inteligência Artificial
+
+Foram utilizadas duas ferramentas de IA como apoio da equipe:
+
+- **Claude Code** (Anthropic), no VS Code;
+- **Gemini** (Google), por meio do **Antigravity**.
+
+**Para quê:** comparação e revisão dos códigos na preparação da AV1 e da AV2. Isso incluiu comparar o estado do projeto entre as entregas, revisar o atendimento aos requisitos e apontar ajustes.
+
+**Como validamos:** todas as sugestões foram revisadas pela equipe e testadas com `npm run build`, `npm run lint`, compilação do back-end, chamadas aos endpoints da API e uso da aplicação no navegador.
