@@ -1,111 +1,100 @@
 import type { UserJobMatch, MatchStatus } from "../types/job";
 import vagasSeed from "../data/vagas.json";
-import { apiRequest, getAuthToken } from "./api";
+import { apiRequest } from "./api";
 
 const STORAGE_KEY = "job_search_matches";
 const LAST_UPDATED_KEY = "job_search_last_updated";
 
-// Dados locais iniciais carregados a partir de src/data/vagas.json (Fallback / Offline)
-const INITIAL_MOCK_JOBS: UserJobMatch[] = vagasSeed as unknown as UserJobMatch[];
+// Vagas de demonstração (mesmo formato da API) para o modo offline sem cache
+const DEMO_JOBS: UserJobMatch[] = vagasSeed as unknown as UserJobMatch[];
+
+/** De onde vieram os dados exibidos no modo offline. */
+export type OfflineSource = "cache" | "seed";
+
+export interface MatchPatch {
+  is_favorite?: boolean;
+  status?: MatchStatus;
+}
+
+function readCache(): UserJobMatch[] | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? (parsed as UserJobMatch[]) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(matches: UserJobMatch[]): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(matches));
+}
 
 /**
  * Camada de repositório de vagas (Repository Pattern).
- * Conecta-se à API Spring Boot (/api/jobs) e mantém fallback transparente
- * para o LocalStorage caso o back-end esteja temporariamente indisponível.
+ * A fonte de verdade é a API Spring Boot (/api/jobs). O localStorage é apenas um cache,
+ * usado SOMENTE quando o usuário escolhe explicitamente o modo offline.
+ * Todas as falhas são propagadas (ApiError) para a página exibir o estado de erro.
  */
 export const jobStorageService = {
-  /**
-   * Busca as vagas na API do Spring Boot.
-   * Se o usuário estiver autenticado e o back-end estiver online, obtém dados reais.
-   * Caso contrário, recorre ao cache local.
-   */
+  /** GET /api/jobs — vagas compatíveis do usuário logado. Lança ApiError em caso de falha. */
   async fetchJobs(): Promise<UserJobMatch[]> {
-    try {
-      const remoteJobs = await apiRequest<UserJobMatch[]>("/api/jobs");
-      if (remoteJobs && Array.isArray(remoteJobs) && remoteJobs.length > 0) {
-        // Atualiza o cache local para resiliência offline
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteJobs));
-        if (!localStorage.getItem(LAST_UPDATED_KEY)) {
-          localStorage.setItem(
-            LAST_UPDATED_KEY,
-            remoteJobs[0]?.matched_at || new Date().toISOString()
-          );
-        }
-        return remoteJobs;
-      }
-    } catch (err: unknown) {
-      console.warn(
-        "Não foi possível buscar vagas na API Spring Boot. Usando dados locais como fallback.",
-        (err as Error).message
-      );
-    }
+    const remoteJobs = await apiRequest<UserJobMatch[]>("/api/jobs");
+    const matches = Array.isArray(remoteJobs) ? remoteJobs : [];
 
-    // Fallback: carrega do LocalStorage ou mock inicial
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (!stored) {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_MOCK_JOBS));
-          resolve(INITIAL_MOCK_JOBS);
-        } else {
-          try {
-            const parsed = JSON.parse(stored);
-            resolve(parsed);
-          } catch {
-            resolve(INITIAL_MOCK_JOBS);
-          }
-        }
-      }, 200);
-    });
+    // Atualiza o cache local (inclusive lista vazia) para o modo offline
+    writeCache(matches);
+    if (!localStorage.getItem(LAST_UPDATED_KEY) && matches.length > 0) {
+      localStorage.setItem(LAST_UPDATED_KEY, matches[0]?.matched_at || new Date().toISOString());
+    }
+    return matches;
   },
 
   /**
-   * Dispara a busca e atualização manual de vagas diretamente na API do Spring Boot (/api/jobs/refresh).
-   * O Spring Boot executa o pipeline Python de scraping na Gupy e IA, retornando as vagas atualizadas.
+   * Contingência: dados salvos neste navegador (última resposta da API) ou,
+   * se não houver nenhum, as vagas de demonstração de src/data/vagas.json.
+   */
+  loadOfflineJobs(): { matches: UserJobMatch[]; source: OfflineSource } {
+    const cached = readCache();
+    if (cached && cached.length > 0) {
+      return { matches: cached, source: "cache" };
+    }
+    return { matches: DEMO_JOBS, source: "seed" };
+  },
+
+  /**
+   * POST /api/jobs/refresh — o Spring Boot executa o pipeline Python (scraping Gupy + IA)
+   * e devolve as vagas atualizadas. Lança ApiError em caso de falha.
    */
   async manualRefreshJobs(): Promise<{
     matches: UserJobMatch[];
     updatedAt: string;
     message: string;
     totalJobs: number;
+    success: boolean;
   }> {
-    try {
-      const response = await apiRequest<{
-        status: string;
-        message: string;
-        total_jobs: number;
-        updated_at: string;
-        matches: UserJobMatch[];
-      }>("/api/jobs/refresh", {
-        method: "POST",
-      });
+    const response = await apiRequest<{
+      status: string;
+      message: string;
+      total_jobs: number;
+      updated_at: string;
+      matches: UserJobMatch[];
+    }>("/api/jobs/refresh", {
+      method: "POST",
+    });
 
-      if (response && response.matches) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(response.matches));
-        const updatedTime = response.updated_at || new Date().toISOString();
-        localStorage.setItem(LAST_UPDATED_KEY, updatedTime);
-
-        return {
-          matches: response.matches,
-          updatedAt: updatedTime,
-          message: response.message || "Vagas atualizadas com sucesso a partir da API da Gupy.",
-          totalJobs: response.total_jobs || response.matches.length,
-        };
-      }
-    } catch (err: unknown) {
-      console.warn("Falha ao sincronizar via /api/jobs/refresh. Recorrendo ao cache local:", err);
-    }
-
-    // Fallback: busca vagas locais e atualiza o timestamp
-    const currentMatches = await this.fetchJobs();
-    const fallbackTimestamp = new Date().toISOString();
-    localStorage.setItem(LAST_UPDATED_KEY, fallbackTimestamp);
+    const matches = Array.isArray(response.matches) ? response.matches : [];
+    const updatedTime = response.updated_at || new Date().toISOString();
+    writeCache(matches);
+    localStorage.setItem(LAST_UPDATED_KEY, updatedTime);
 
     return {
-      matches: currentMatches,
-      updatedAt: fallbackTimestamp,
-      message: "Vagas carregadas a partir do cache local.",
-      totalJobs: currentMatches.length,
+      matches,
+      updatedAt: updatedTime,
+      message: response.message || "Vagas atualizadas.",
+      totalJobs: response.total_jobs ?? matches.length,
+      success: response.status === "success",
     };
   },
 
@@ -113,63 +102,20 @@ export const jobStorageService = {
     return localStorage.getItem(LAST_UPDATED_KEY);
   },
 
-  setLastUpdated(timestamp: string): void {
-    localStorage.setItem(LAST_UPDATED_KEY, timestamp);
-  },
-
   /**
-   * Alterna a marcação de favorito via PATCH /api/jobs/{id}.
+   * PATCH /api/jobs/{id} — favorito e/ou status da candidatura.
+   * Só altera o cache depois que o servidor confirmar; em caso de falha lança ApiError.
    */
-  async toggleFavorite(matchId: number): Promise<UserJobMatch[]> {
-    const jobs = await this.fetchJobs();
-    const current = jobs.find((j) => j.id === matchId);
-    const newFavoriteState = current ? !current.is_favorite : true;
+  async updateMatch(matchId: number, patch: MatchPatch): Promise<UserJobMatch> {
+    const updated = await apiRequest<UserJobMatch>(`/api/jobs/${matchId}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
 
-    // Tenta sincronizar com o Spring Boot se houver token
-    if (getAuthToken()) {
-      try {
-        await apiRequest<UserJobMatch>(`/api/jobs/${matchId}`, {
-          method: "PATCH",
-          body: JSON.stringify({ is_favorite: newFavoriteState }),
-        });
-      } catch (err: unknown) {
-        console.warn("Falha ao sincronizar favorito com a API:", (err as Error).message);
-      }
+    const cached = readCache();
+    if (cached) {
+      writeCache(cached.map((item) => (item.id === matchId ? updated : item)));
     }
-
-    const updated = jobs.map((item) =>
-      item.id === matchId ? { ...item, is_favorite: newFavoriteState } : item
-    );
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     return updated;
-  },
-
-  /**
-   * Atualiza o status da candidatura (ex: 'applied', 'viewed', 'discarded') via PATCH /api/jobs/{id}.
-   */
-  async updateStatus(matchId: number, status: MatchStatus): Promise<UserJobMatch[]> {
-    const jobs = await this.fetchJobs();
-
-    // Tenta sincronizar com o Spring Boot se houver token
-    if (getAuthToken()) {
-      try {
-        await apiRequest<UserJobMatch>(`/api/jobs/${matchId}`, {
-          method: "PATCH",
-          body: JSON.stringify({ status }),
-        });
-      } catch (err: unknown) {
-        console.warn("Falha ao sincronizar status com a API:", (err as Error).message);
-      }
-    }
-
-    const updated = jobs.map((item) =>
-      item.id === matchId ? { ...item, status } : item
-    );
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    return updated;
-  },
-
-  resetMockData(): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_MOCK_JOBS));
   },
 };

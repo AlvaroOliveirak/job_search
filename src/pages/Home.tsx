@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { UserJobMatch, MatchStatus } from "../types/job";
-import { jobStorageService } from "../services/jobStorage";
+import { jobStorageService, type OfflineSource } from "../services/jobStorage";
+import { getErrorMessage } from "../services/api";
 import { profileService } from "../services/profileService";
 import { JobCard, JobModal, Logo } from "../components";
 import styles from "../styles/home.module.css";
@@ -16,6 +17,8 @@ export function Home() {
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(jobStorageService.getLastUpdated());
   const [error, setError] = useState<string | null>(null);
+  // null = dados vindos da API; "cache"/"seed" = modo offline escolhido pelo usuário
+  const [offlineSource, setOfflineSource] = useState<OfflineSource | null>(null);
 
   const handleLogout = () => {
     logout();
@@ -27,6 +30,7 @@ export function Home() {
   const [onlyFavorites, setOnlyFavorites] = useState<boolean>(false);
   const [profileMinScore, setProfileMinScore] = useState<number>(70);
   const [minScore, setMinScore] = useState<number>(70);
+  const minScoreInitialized = useRef(false);
 
   // Estado do Modal de Detalhes
   const [selectedMatch, setSelectedMatch] = useState<UserJobMatch | null>(null);
@@ -41,117 +45,137 @@ export function Home() {
     }, 3200);
   };
 
-  // Carrega as vagas usando a camada de serviço (Repository) e perfil ativo
-  const loadJobs = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const profile = await profileService.getActiveProfile();
-      if (profile && typeof profile.min_score === "number") {
-        setProfileMinScore(profile.min_score);
-      }
-      const data = await jobStorageService.fetchJobs();
-      setMatches(data);
-      setLastUpdated(jobStorageService.getLastUpdated());
-    } catch (err) {
-      setError("Falha ao carregar as vagas. Tente novamente mais tarde.");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Executa busca e scraping manualmente a pedido do usuário
-  const handleManualRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      const result = await jobStorageService.manualRefreshJobs();
-      setMatches(result.matches);
-      setLastUpdated(result.updatedAt);
-      showToast(`✨ ${result.totalJobs} vagas sincronizadas com sucesso a partir da API da Gupy!`);
-    } catch (err) {
-      console.error("Erro ao atualizar vagas manualmente:", err);
-      showToast("⚠️ Não foi possível sincronizar no momento. Vagas locais mantidas.");
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
+  /**
+   * Carrega perfil + vagas da API na montagem da página. "Tentar novamente" e "Reconectar"
+   * incrementam reloadKey para o efeito rodar de novo. Falhas viram o estado de erro.
+   */
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    let isActive = true;
+    let active = true;
+    const isActive = () => active;
 
-    const initPage = async () => {
-      setLoading(true);
-      setError(null);
-
+    const fetchPageData = async () => {
+      // 1. Perfil: só define a nota mínima do filtro; uma falha aqui não impede a lista
       try {
-        // 1. Carrega o perfil do usuário para aplicar a nota mínima configurada pelo candidato
         const profile = await profileService.getActiveProfile();
         const preferredMin = profile?.min_score ?? 70;
-        if (isActive) {
+        if (isActive()) {
           setProfileMinScore(preferredMin);
-          setMinScore(preferredMin);
+          if (!minScoreInitialized.current) {
+            setMinScore(preferredMin);
+            minScoreInitialized.current = true;
+          }
         }
+      } catch (err) {
+        console.warn("Perfil indisponível, usando nota mínima padrão:", err);
+      }
 
-        // 2. Carrega as vagas do repositório
+      // 2. Vagas
+      try {
         const data = await jobStorageService.fetchJobs();
-        if (isActive) {
+        if (isActive()) {
           setMatches(data);
+          setOfflineSource(null);
           setLastUpdated(jobStorageService.getLastUpdated());
         }
       } catch (err) {
-        if (isActive) {
-          setError("Falha ao carregar as vagas. Tente novamente mais tarde.");
-          console.error(err);
+        if (isActive()) {
+          setError(getErrorMessage(err, "Falha ao carregar as vagas. Tente novamente mais tarde."));
         }
       } finally {
-        if (isActive) {
+        if (isActive()) {
           setLoading(false);
         }
       }
     };
 
-    void initPage();
-
+    void fetchPageData();
     return () => {
-      isActive = false;
+      active = false;
     };
-  }, []);
+  }, [reloadKey]);
 
-  // Manipulação de favoritos via serviço com feedback visual (Requisito 8)
-  const handleToggleFavorite = async (matchId: number) => {
+  // "Tentar novamente" / "Reconectar": volta ao estado de carregamento e refaz a requisição
+  const loadJobs = () => {
+    setLoading(true);
+    setError(null);
+    setReloadKey((k) => k + 1);
+  };
+
+  // Contingência: o usuário escolhe ver os dados salvos neste navegador (ou de demonstração)
+  const handleUseOfflineData = () => {
+    const offline = jobStorageService.loadOfflineJobs();
+    setMatches(offline.matches);
+    setOfflineSource(offline.source);
+    setError(null);
+  };
+
+  // No modo offline nada é enviado ao servidor, então alterações ficam bloqueadas
+  const blockIfOffline = (): boolean => {
+    if (offlineSource) {
+      showToast("Modo offline: reconecte à API para salvar alterações.");
+      return true;
+    }
+    return false;
+  };
+
+  // Substitui o item pela versão confirmada pelo servidor
+  const applyServerUpdate = (updated: UserJobMatch) => {
+    setMatches((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+    setSelectedMatch((prev) => (prev && prev.id === updated.id ? updated : prev));
+  };
+
+  // Executa busca e scraping manualmente a pedido do usuário
+  const handleManualRefresh = async () => {
+    if (blockIfOffline()) return;
+    setIsRefreshing(true);
     try {
-      const updated = await jobStorageService.toggleFavorite(matchId);
-      setMatches(updated);
-      const target = updated.find((m) => m.id === matchId);
-      if (target) {
-        showToast(
-          target.is_favorite
-            ? `⭐ Vaga "${target.job.title}" salva nos favoritos!`
-            : `Vaga "${target.job.title}" removida dos favoritos.`
-        );
-      }
-      if (selectedMatch && selectedMatch.id === matchId) {
-        setSelectedMatch((prev) =>
-          prev ? { ...prev, is_favorite: !prev.is_favorite } : null
-        );
-      }
+      const result = await jobStorageService.manualRefreshJobs();
+      setMatches(result.matches);
+      setLastUpdated(result.updatedAt);
+      showToast(
+        result.success
+          ? `✨ ${result.totalJobs} vagas sincronizadas com sucesso a partir da API da Gupy!`
+          : `ℹ️ ${result.message}`
+      );
     } catch (err) {
-      console.error("Erro ao favoritar vaga:", err);
+      showToast(`⚠️ ${getErrorMessage(err, "Não foi possível sincronizar no momento.")}`);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
-  // Manipulação de status via serviço com feedback visual (Requisito 8)
-  const handleUpdateStatus = async (matchId: number, status: MatchStatus) => {
+  // Favoritos: só muda na tela depois que a API confirmar (Requisito 8)
+  const handleToggleFavorite = async (matchId: number) => {
+    if (blockIfOffline()) return;
+    const current = matches.find((m) => m.id === matchId);
+    if (!current) return;
+
     try {
-      const updated = await jobStorageService.updateStatus(matchId, status);
-      setMatches(updated);
-      showToast(`✓ Etapa da vaga atualizada para "${status}" com sucesso!`);
-      if (selectedMatch && selectedMatch.id === matchId) {
-        setSelectedMatch((prev) => (prev ? { ...prev, status } : null));
-      }
+      const updated = await jobStorageService.updateMatch(matchId, {
+        is_favorite: !current.is_favorite,
+      });
+      applyServerUpdate(updated);
+      showToast(
+        updated.is_favorite
+          ? `⭐ Vaga "${updated.job.title}" salva nos favoritos!`
+          : `Vaga "${updated.job.title}" removida dos favoritos.`
+      );
     } catch (err) {
-      console.error("Erro ao atualizar status:", err);
+      showToast(`⚠️ ${getErrorMessage(err, "Não foi possível salvar o favorito.")}`);
+    }
+  };
+
+  // Status da candidatura: só muda na tela depois que a API confirmar (Requisito 8)
+  const handleUpdateStatus = async (matchId: number, status: MatchStatus) => {
+    if (blockIfOffline()) return;
+    try {
+      const updated = await jobStorageService.updateMatch(matchId, { status });
+      applyServerUpdate(updated);
+      showToast(`✓ Etapa da vaga atualizada para "${status}" com sucesso!`);
+    } catch (err) {
+      showToast(`⚠️ ${getErrorMessage(err, "Não foi possível atualizar o status.")}`);
     }
   };
 
@@ -343,6 +367,22 @@ export function Home() {
         </div>
       </section>
 
+      {/* Modo offline: deixa claro que os dados são locais e não serão salvos no servidor */}
+      {offlineSource && !loading && (
+        <div className={styles.offlineBanner} role="status">
+          <span>
+            <strong>Modo offline:</strong>{" "}
+            {offlineSource === "cache"
+              ? "exibindo as últimas vagas salvas neste navegador."
+              : "exibindo vagas de demonstração (nenhum dado salvo neste navegador)."}{" "}
+            Alterações estão desativadas até reconectar.
+          </span>
+          <button className={styles.actionButton} onClick={loadJobs}>
+            Reconectar
+          </button>
+        </div>
+      )}
+
       {/* 4. Lista / Grid de Vagas */}
       <main>
         {loading ? (
@@ -358,9 +398,18 @@ export function Home() {
             <span style={{ fontSize: "36px", marginBottom: "12px" }}>⚠️</span>
             <h3 className={styles.feedbackTitle}>Erro ao consultar vagas</h3>
             <p className={styles.feedbackText}>{error}</p>
-            <button className={styles.actionButton} onClick={loadJobs}>
-              Tentar novamente
-            </button>
+            <div className={styles.feedbackActions}>
+              <button className={styles.actionButton} onClick={loadJobs}>
+                Tentar novamente
+              </button>
+              <button
+                className={styles.secondaryActionButton}
+                onClick={handleUseOfflineData}
+                title="Exibir as últimas vagas salvas neste navegador (somente leitura)"
+              >
+                Usar dados salvos (offline)
+              </button>
+            </div>
           </div>
         ) : filteredMatches.length === 0 ? (
           <div className={styles.feedbackContainer}>

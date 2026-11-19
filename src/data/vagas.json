@@ -1,1 +1,90 @@
-[]
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "job_id": 101,
+    "score": 95,
+    "is_notified_telegram": false,
+    "is_favorite": true,
+    "status": "applied",
+    "matched_at": "2026-09-27T09:00:00.000Z",
+    "job": {
+      "id": 101,
+      "job_hash": "hash_gupy_001",
+      "title": "Desenvolvedor Front-end JÃºnior (React / TypeScript)",
+      "company": "Nubank",
+      "location": "Remoto - Brasil",
+      "url": "https://nubank.gupy.io",
+      "source": "Demonstração",
+      "description": "Buscamos uma pessoa desenvolvedora Front-end JÃºnior com paixÃ£o por criar interfaces intuitivas, acessÃ­veis e de alta performance.\n\nPrincipais Responsabilidades:\n- ConstruÃ§Ã£o e manutenÃ§Ã£o de componentes utilizando React, TypeScript e CSS Modules.\n- Consumo de APIs RESTful e integraÃ§Ã£o com microserviÃ§os.\n- ParticipaÃ§Ã£o ativa em cerimÃ´nias Ã¡geis (Scrum/Kanban) e code reviews.\n\nRequisitos:\n- Conhecimento sÃ³lido em HTML5, CSS3 e JavaScript Moderno (ES6+).\n- ExperiÃªncia prÃ¡tica com React e TypeScript.\n- Familiaridade com Git e controle de versÃ£o.\n- DesejÃ¡vel: Conhecimentos em testes automatizados (Jest, React Testing Library).",
+      "posted_at": "2026-09-27T06:00:00.000Z",
+      "created_at": "2026-09-27T08:00:00.000Z"
+    }
+  },
+  {
+    "id": 2,
+    "user_id": 1,
+    "job_id": 102,
+    "score": 88,
+    "is_notified_telegram": false,
+    "is_favorite": false,
+    "status": "new",
+    "matched_at": "2026-09-27T05:00:00.000Z",
+    "job": {
+      "id": 102,
+      "job_hash": "hash_gupy_002",
+      "title": "Desenvolvedor Python / FastAPI JÃºnior",
+      "company": "Mercado Livre",
+      "location": "SÃ£o Paulo, SP (HÃ­brido)",
+      "url": "https://mercadolivre.gupy.io",
+      "source": "Demonstração",
+      "description": "Venha fazer parte do nosso time de tecnologia desenvolvendo APIs escalÃ¡veis e seguras para milhÃµes de usuÃ¡rios diÃ¡rios.\n\nRequisitos:\n- VivÃªncia com Python 3 e frameworks modernos (FastAPI ou Flask).\n- Conceitos sÃ³lidos de APIs RESTful, HTTP status codes e autenticaÃ§Ã£o JWT.\n- Conhecimento em bancos relacionais (PostgreSQL, SQLite ou MySQL) com SQLAlchemy.\n- Vontade de aprender e trabalhar em equipe multidisciplinar.",
+      "posted_at": "2026-09-26T23:00:00.000Z",
+      "created_at": "2026-09-27T01:00:00.000Z"
+    }
+  },
+  {
+    "id": 3,
+    "user_id": 1,
+    "job_id": 103,
+    "score": 82,
+    "is_notified_telegram": false,
+    "is_favorite": false,
+    "status": "interview",
+    "matched_at": "2026-09-26T17:00:00.000Z",
+    "job": {
+      "id": 103,
+      "job_hash": "hash_gupy_003",
+      "title": "Desenvolvedor Full Stack JÃºnior (Node.js & React)",
+      "company": "Stone",
+      "location": "Rio de Janeiro, RJ (Remoto)",
+      "url": "https://stone.gupy.io",
+      "source": "Demonstração",
+      "description": "Oportunidade para atuar ponta a ponta no ecossistema financeiro da Stone.\n\nO que esperamos de vocÃª:\n- ExperiÃªncia com JavaScript/TypeScript tanto no client quanto no server.\n- Conhecimento em React, consumo de APIs e gerenciamento de estado.\n- PrÃ¡tica com Node.js (Express ou Fastify).\n- Boas noÃ§Ãµes de Clean Code e documentaÃ§Ã£o de software.",
+      "posted_at": "2026-09-26T11:00:00.000Z",
+      "created_at": "2026-09-26T14:00:00.000Z"
+    }
+  },
+  {
+    "id": 4,
+    "user_id": 1,
+    "job_id": 104,
+    "score": 65,
+    "is_notified_telegram": false,
+    "is_favorite": false,
+    "status": "new",
+    "matched_at": "2026-09-25T11:00:00.000Z",
+    "job": {
+      "id": 104,
+      "job_hash": "hash_gupy_004",
+      "title": "EstagiÃ¡rio em Engenharia de Software",
+      "company": "Embraer",
+      "location": "SÃ£o JosÃ© dos Campos, SP",
+      "url": "https://embraer.gupy.io",
+      "source": "Demonstração",
+      "description": "Programa de estÃ¡gio focado em formaÃ§Ã£o tÃ©cnica acelerada para estudantes de CiÃªncia da ComputaÃ§Ã£o, Engenharia de Software ou correlatas.\n\nAtividades:\n- Apoiar equipes de produto no desenvolvimento de dashboards e automaÃ§Ãµes.\n- Aprender prÃ¡ticas de CI/CD, testes e versionamento.",
+      "posted_at": "2026-09-25T09:00:00.000Z",
+      "created_at": "2026-09-25T10:00:00.000Z"
+    }
+  }
+]

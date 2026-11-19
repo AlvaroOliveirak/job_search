@@ -1,107 +1,130 @@
 /**
  * Cliente HTTP centralizado para comunicação com a API RESTful do Spring Boot.
  * Injeta automaticamente o token JWT Bearer e centraliza o tratamento de erros HTTP.
+ * É o ÚNICO lugar do front-end que chama fetch().
  */
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8082";
 
+const TOKEN_KEY = "job_search_token";
+
+/** Erro de requisição com o status HTTP (0 = falha de rede / back-end offline). */
+export class ApiError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+/** Mensagem amigável para exibir na interface a partir de qualquer erro capturado. */
+export function getErrorMessage(err: unknown, fallback: string): string {
+  if (err instanceof ApiError && err.message) {
+    return err.message;
+  }
+  return fallback;
+}
+
 export const getAuthToken = (): string | null => {
-  return localStorage.getItem("job_search_token");
+  return localStorage.getItem(TOKEN_KEY);
 };
 
 export const setAuthToken = (token: string | null): void => {
   if (token) {
-    localStorage.setItem("job_search_token", token);
+    localStorage.setItem(TOKEN_KEY, token);
   } else {
-    localStorage.removeItem("job_search_token");
+    localStorage.removeItem(TOKEN_KEY);
   }
 };
+
+/**
+ * Chamado quando uma rota protegida responde 401 (token ausente, inválido ou expirado).
+ * O AuthProvider registra aqui o encerramento da sessão + redirecionamento para /login.
+ */
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  unauthorizedHandler = handler;
+}
+
+function defaultMessageForStatus(status: number): string {
+  switch (status) {
+    case 400:
+      return "Dados inválidos. Verifique os campos e tente novamente.";
+    case 401:
+      return "E-mail ou senha incorretos.";
+    case 403:
+      return "Acesso negado. Você não tem permissão para esta ação.";
+    case 404:
+      return "Recurso não encontrado.";
+    case 409:
+      return "Este e-mail já está cadastrado. Tente fazer login.";
+    case 422:
+      return "Dados inválidos enviados ao servidor.";
+    case 500:
+    case 502:
+    case 503:
+      return "Erro interno no servidor. Tente novamente em alguns instantes.";
+    default:
+      return `Erro inesperado (código ${status}). Tente novamente.`;
+  }
+}
 
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const isAuthEndpoint = path.startsWith("/api/auth/");
   const token = getAuthToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(options.headers as Record<string, string> || {}),
+    ...((options.headers as Record<string, string>) || {}),
   };
 
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const url = `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
-
   let response: Response;
   try {
-    response = await fetch(url, {
+    response = await fetch(`${API_BASE_URL}${path}`, {
       ...options,
       headers,
     });
-  } catch (networkErr) {
+  } catch {
     // Erro de rede: backend offline, CORS bloqueado, sem internet, etc.
-    const msg = networkErr instanceof Error ? networkErr.message.toLowerCase() : "";
-    if (
-      msg.includes("failed to fetch") ||
-      msg.includes("networkerror") ||
-      msg.includes("load failed") ||
-      msg.includes("fetch")
-    ) {
-      const err = new Error(
-        "Não foi possível conectar ao servidor. Verifique se o backend está em execução ou tente novamente mais tarde."
-      );
-      (err as { status?: number }).status = 0;
-      throw err;
-    }
-    throw networkErr;
+    throw new ApiError(
+      "Não foi possível conectar ao servidor. Verifique se o backend está em execução ou tente novamente mais tarde.",
+      0
+    );
   }
 
   if (!response.ok) {
-    let errorMessage: string;
-
-    switch (response.status) {
-      case 400:
-        errorMessage = "Dados inválidos. Verifique os campos e tente novamente.";
-        break;
-      case 401:
-        errorMessage = "E-mail ou senha incorretos.";
-        break;
-      case 403:
-        errorMessage = "Acesso negado. Você não tem permissão para esta ação.";
-        break;
-      case 404:
-        errorMessage = "Recurso não encontrado.";
-        break;
-      case 409:
-        errorMessage = "Este e-mail já está cadastrado. Tente fazer login.";
-        break;
-      case 422:
-        errorMessage = "Dados inválidos enviados ao servidor.";
-        break;
-      case 500:
-      case 502:
-      case 503:
-        errorMessage = "Erro interno no servidor. Tente novamente em alguns instantes.";
-        break;
-      default:
-        errorMessage = `Erro inesperado (código ${response.status}). Tente novamente.`;
+    // 401 fora do login/cadastro = sessão inválida ou expirada: encerra a sessão local
+    if (response.status === 401 && !isAuthEndpoint) {
+      setAuthToken(null);
+      unauthorizedHandler?.();
+      throw new ApiError("Sua sessão expirou. Faça login novamente.", 401);
     }
 
-    // Tenta sobrescrever com a mensagem específica que o backend enviou
+    let errorMessage = defaultMessageForStatus(response.status);
+
+    // Usa a mensagem específica do back-end (ex.: "Já existe um usuário cadastrado com este e-mail.").
+    // O campo "error" do Spring é só o nome do status em inglês ("Forbidden"), por isso é ignorado.
     try {
       const errorJson = await response.json();
-      const backendMsg = errorJson.message || errorJson.detail || errorJson.error;
-      if (backendMsg && typeof backendMsg === "string") {
+      const backendMsg = errorJson.message || errorJson.detail;
+      if (typeof backendMsg === "string" && backendMsg.trim()) {
         errorMessage = backendMsg;
       }
     } catch {
       // payload não é JSON — mantém a mensagem amigável acima
     }
 
-    const error = new Error(errorMessage);
-    (error as { status?: number }).status = response.status;
-    throw error;
+    throw new ApiError(errorMessage, response.status);
   }
 
   if (response.status === 204) {
